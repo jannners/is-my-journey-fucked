@@ -36,6 +36,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .dir{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
 .dir a{padding:8px 14px;font-weight:800;font-size:.9rem;text-decoration:none;color:var(--muted)}
 .dir a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+.dirnote{font-size:.8rem;color:var(--muted);flex-basis:100%;order:3;margin-top:-4px}
 
 .q{font:600 .95rem var(--font-body);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 4px}
 .answer{font:400 clamp(5.5rem,30vw,12rem)/.86 var(--font-display);margin:0;color:var(--verdict);letter-spacing:-.01em;text-transform:uppercase}
@@ -175,6 +176,7 @@ footer{color:var(--muted);font-size:.78rem}
       <a href="#to-woodgrange" id="dirOut">To Woodgrange Park</a>
       <a href="#to-ockendon" id="dirBack">To Ockendon</a>
     </nav>
+    <span class="dirnote" id="dirNote"></span>
     <span><span id="updated">Checking…</span> <button id="refresh" type="button">Check again</button></span>
   </div>
 
@@ -391,14 +393,21 @@ async function planJourney(trip){
  throw last||new Error("no journeys");
 }
 
-function trip(){return TRIPS[location.hash.slice(1)]||TRIPS[(()=>{try{return localStorage.getItem("jf-dir")}catch{return null}})()]||TRIPS["to-woodgrange"]}
-function tripKey(){return Object.keys(TRIPS).find(k=>TRIPS[k]===trip())}
+// Before 13:00 UK time you're heading to Woodgrange Park; from 13:00 you're heading home to Ockendon.
+// A tapped tab (or a #to-… bookmark) overrides that until you tap the automatic direction again.
+function autoKey(){const h=+new Date().toLocaleString("en-GB",{timeZone:"Europe/London",hour:"2-digit",hour12:false});return h<13?"to-woodgrange":"to-ockendon"}
+function tripKey(){const h=location.hash.slice(1);return TRIPS[h]?h:autoKey()}
+function trip(){return TRIPS[tripKey()]}
+for(const a of [$("dirOut"),$("dirBack")])a.addEventListener("click",e=>{
+ if(a.getAttribute("href").slice(1)===autoKey()){e.preventDefault();history.replaceState(null,"",location.pathname+location.search);check()}
+});
 
 let running=false;
 async function check(){
  if(running)return;running=true;failures.length=0;
  const T=trip(),key=tripKey();
- try{localStorage.setItem("jf-dir",key)}catch{}
+ const manual=!!TRIPS[location.hash.slice(1)];
+ $("dirNote").textContent=manual&&key!==autoKey()?"You picked this direction":`Auto: ${key==="to-woodgrange"?"it's morning, so heading out":"it's after 1pm, so heading home"}`;
  $("dirOut").setAttribute("aria-current",key==="to-woodgrange"?"page":"false");
  $("dirBack").setAttribute("aria-current",key==="to-ockendon"?"page":"false");
  $("question").textContent=`Is my journey to ${T.to} fucked?`;
