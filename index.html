@@ -37,6 +37,24 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .dir a{padding:8px 14px;font-weight:800;font-size:.9rem;text-decoration:none;color:var(--muted)}
 .dir a[aria-current="page"]{background:var(--fg);color:var(--bg)}
 .dirnote{font-size:.8rem;color:var(--muted);flex-basis:100%;order:3;margin-top:-4px}
+.dirnote a{color:var(--fg);font-weight:700}
+.dir{flex-wrap:wrap}
+.dir a[aria-expanded="true"]{background:var(--line);color:var(--fg)}
+@media (max-width:480px){.dir a{padding:8px 10px}.dir .to{display:none}}
+.picker{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
+.pk-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.picker label{display:grid;gap:4px;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);min-width:0}
+.picker input{font:600 1rem var(--font-body);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;min-width:0}
+.picker input:focus-visible{outline:2px solid var(--fg);outline-offset:1px}
+#pkSwap{height:44px}
+@media (max-width:520px){.pk-row{grid-template-columns:1fr}#pkSwap{justify-self:start;height:auto}}
+.pk-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.go{background:var(--fg);color:var(--bg);border-color:var(--fg);font-size:.95rem;padding:9px 18px}
+.pk-hint{font-size:.82rem;color:var(--muted);flex:1;min-width:200px}
+.pk-hint.err{color:var(--bad)}
+.recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
+.recent a{font-weight:700;color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;text-decoration:none}
+.na{color:var(--muted)}
 
 .q{font:600 .95rem var(--font-body);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 4px}
 .answer{font:400 clamp(5.5rem,30vw,12rem)/.86 var(--font-display);margin:0;color:var(--verdict);letter-spacing:-.01em;text-transform:uppercase}
@@ -172,13 +190,28 @@ footer{color:var(--muted);font-size:.78rem}
 <body>
 <div class="wrap">
   <div class="top">
-    <nav class="dir" aria-label="Direction">
-      <a href="#to-woodgrange" id="dirOut">To Woodgrange Park</a>
-      <a href="#to-ockendon" id="dirBack">To Ockendon</a>
+    <nav class="dir" aria-label="Journey">
+      <a href="#to-woodgrange" id="dirOut"><span class="to">To </span>Woodgrange Park</a>
+      <a href="#to-ockendon" id="dirBack"><span class="to">To </span>Ockendon</a>
+      <a href="#pick" id="dirOther" aria-expanded="false" aria-controls="picker">Elsewhere</a>
     </nav>
     <span class="dirnote" id="dirNote"></span>
     <span><span id="updated">Checking…</span> <button id="refresh" type="button">Check again</button></span>
   </div>
+
+  <form class="picker" id="picker" hidden autocomplete="off">
+    <div class="pk-row">
+      <label for="pkFrom">From<input id="pkFrom" list="stnList" placeholder="Station or code, e.g. OCK" required></label>
+      <button type="button" id="pkSwap" aria-label="Swap from and to">⇄ Swap</button>
+      <label for="pkTo">To<input id="pkTo" list="stnList" placeholder="e.g. Bank or LST" required></label>
+    </div>
+    <datalist id="stnList"></datalist>
+    <div class="pk-actions">
+      <button type="submit" class="go">Is it fucked?</button>
+      <span class="pk-hint" id="pkHint">Type a station name, a 3-letter National Rail code, or any Tube, Overground, Elizabeth line or DLR station.</span>
+    </div>
+    <div class="recent" id="recent"></div>
+  </form>
 
   <section class="verdict" id="verdict" data-v="">
     <p class="q" id="question">Is my journey fucked?</p>
@@ -216,7 +249,7 @@ footer{color:var(--muted);font-size:.78rem}
 
   <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
 
-  <footer>Line status, journeys and live Overground and Tube times from TfL Open Data. c2c times are timetabled, since TfL doesn't publish live c2c train times. Updates every minute.</footer>
+  <footer>Line status, journeys and live Tube, Overground, Elizabeth line and DLR times from TfL Open Data. National Rail times are timetabled, since TfL doesn't publish live times for train companies. Station codes from the uk-railway-stations dataset (ODbL). Updates every minute.</footer>
 </div>
 
 <script>
@@ -238,18 +271,35 @@ const mins=s=>s<60?"Due":Math.round(s/60)+" min";
 const COLORS={bakerloo:"#B36305",central:"#E32017",circle:"#FFD300",district:"#00782A","hammersmith-city":"#F3A9BB",jubilee:"#A0A5A9",
  metropolitan:"#9B0056",northern:"#2b2b2b",piccadilly:"#003688",victoria:"#0098D4","waterloo-city":"#95CDBA",
  liberty:"#61686B",lioness:"#FFA600",mildmay:"#006FE6",suffragette:"#18A95D",weaver:"#9B0058",windrush:"#DC241F",
- elizabeth:"#6950A1",dlr:"#00A4A7",tram:"#5FB526",c2c:"#B7007C","great-northern":"#00A1E4","london-cable-car":"#E21836"};
+ elizabeth:"#6950A1",dlr:"#00A4A7",tram:"#5FB526",c2c:"#B7007C","great-northern":"#00A1E4","london-cable-car":"#E21836",
+ "greater-anglia":"#D70428",southeastern:"#1E90FF",southern:"#7CB342",thameslink:"#E9438D","south-western-railway":"#24398C",
+ "great-western-railway":"#0A493E",chiltern:"#00BFFF","london-northwestern-railway":"#00A650","west-midlands-trains":"#FF8300",
+ "avanti-west-coast":"#004354","lner":"#CE0E2D","heathrow-express":"#532E63",bus:"#DC241F"};
 const LINES={c2c:{name:"c2c",color:"var(--c2c)"},district:{name:"District",color:"var(--district)"},suffragette:{name:"Suffragette",color:"var(--suffragette)"}};
+const lname=id=>LINES[id]?.name||RAW[id]?.name||id;
+const lcol=id=>LINES[id]?.color||COLORS[id]||"var(--muted)";
+const LIGHT=new Set(["circle","hammersmith-city","waterloo-city","lioness"]);
+const lsty=id=>`--lc:${lcol(id)}${LIGHT.has(id)?";color:#111":""}`;
+const LIVE_MODES=["tube","overground","elizabeth-line","dlr"];
 
+/* ---------- National Rail station codes (CRS) ---------- */
+const CRS=new Map();let CRSLIST=[];
+const CRSP=fetch("stations.json").then(r=>r.ok?r.json():[]).then(a=>{CRSLIST=a;a.forEach(s=>CRS.set(s[0],s))}).catch(()=>{});
+// Accepts "OCK", "ock" or "Ockendon (OCK)"; returns [code,name,lat,lon] or null.
+function crsOf(q){q=String(q||"").trim();const m=q.match(/\(([A-Za-z]{3})\)$/);const code=(m?m[1]:/^[A-Za-z]{3}$/.test(q)?q:"").toUpperCase();return(code&&CRS.get(code))||null}
+const queryOf=v=>{const c=crsOf(v);return c?c[0]:String(v||"").trim()};
+const labelOf=q=>{const c=crsOf(q);return c?c[1]:String(q||"").trim()};
+
+const COMMUTE_STOPS=["ockendon","upminster","grays","chafford","barking","west horndon","tilbury","all c2c"];
 const TRIPS={
- "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",legs:[
+ "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",extra:COMMUTE_STOPS,legs:[
   {from:"Ockendon",to:"Upminster",lines:["c2c"]},
   {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true},
   {from:"Barking",to:"Woodgrange Park",lines:["suffragette"]}],
   boards:[
    {line:"district",title:"Upminster to Barking",station:/upminster/i,dest:x=>!/upminster/i.test(x)},
    {line:"suffragette",title:"Barking to Woodgrange Park",station:/^barking\b(?!.*riverside)/i,dest:x=>!/riverside|barking/i.test(x)}]},
- "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",legs:[
+ "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",extra:COMMUTE_STOPS,legs:[
   {from:"Woodgrange Park",to:"Barking",lines:["suffragette"]},
   {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true},
   {from:"Upminster",to:"Ockendon",lines:["c2c"]}],
@@ -257,9 +307,14 @@ const TRIPS={
    {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
    {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,dest:x=>/upminster/i.test(x)}]}
 };
-const MY_STOPS=/ockendon|upminster|grays|chafford|barking|west horndon|tilbury|all lines|whole|entire|all c2c/i;
+// A train company's status covers its whole network, so only count it if it mentions somewhere on this trip.
+function relevance(T,legs){
+ const words=new Set(["all lines","all routes","whole","entire",...(T.extra||[])]);
+ legs.forEach(l=>[l.from,l.to].forEach(n=>{n=clean(n).replace(/^London\s+/i,"").toLowerCase();if(n.length>=4)words.add(n)}));
+ return new RegExp([...words].map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
+}
 
-const RANK={good:0,warn:1,closed:2,bad:3};
+const RANK={na:-1,good:0,warn:1,closed:2,bad:3};
 function classify(sev){
  if(sev===10||sev===18||sev===19)return"good";
  if(sev===20||sev===16||sev===0)return"closed";
@@ -325,7 +380,8 @@ function richText(s,max){
 /* ---------- details popup ---------- */
 function tflLinks(l){
  const id=l.id,mode=l.modeName,out=[];
- if(isC2c(l)){out.push(["National Rail disruptions","https://www.nationalrail.co.uk/status-and-disruptions/"],["c2c website","https://www.c2c-online.co.uk/"]);return out}
+ if(mode==="national-rail"||isC2c(l)){out.push(["National Rail disruptions","https://www.nationalrail.co.uk/status-and-disruptions/"]);if(isC2c(l))out.push(["c2c website","https://www.c2c-online.co.uk/"]);return out}
+ if(mode==="elizabeth-line")out.push(["Elizabeth line on TfL","https://tfl.gov.uk/elizabeth-line/route/elizabeth/"]);
  if(mode==="tube")out.push([`${l.name} line on TfL`,`https://tfl.gov.uk/tube/route/${id}/`]);
  if(mode==="overground")out.push([`${l.name} line on TfL`,`https://tfl.gov.uk/overground/route/${id}/`]);
  if(mode==="dlr")out.push(["DLR on TfL","https://tfl.gov.uk/dlr/route/dlr/"]);
@@ -340,7 +396,7 @@ function openPopup(title,color,html){
 async function openLine(key){
  const l=RAW[key];if(!l)return;
  const s=lineState(l);
- const color=COLORS[l.id]||(LINES[key]?.color)||"var(--muted)";
+ const color=lcol(key);
  const sts=l.lineStatuses||[];
  let html=`<p class="popstate ${s.state}">${esc(s.label)}</p>`;
  sts.filter(x=>x.reason||x.validityPeriods?.length).forEach(x=>{
@@ -374,18 +430,28 @@ async function resolveStop(name,modes){
  if(!list.length)throw new Error("TfL couldn't find "+name);
  // Prefer the rail station's own code, then a hub, then anything; keep coordinates as a last resort.
  const ids=[...list.filter(m=>/^910G/.test(m.id)),...list.filter(m=>/^HUB/.test(m.id)),...list].map(m=>m.id);
- return{ids:[...new Set(ids)].slice(0,3),coord:list[0].lat?`${list[0].lat},${list[0].lon}`:null};
+ return{ids:[...new Set(ids)].slice(0,3),coord:list[0].lat?`${list[0].lat},${list[0].lon}`:null,name:clean(list[0].name)};
+}
+// Turns what was typed (a name or a 3-letter code) into TfL stop ids, keeping coordinates as a fallback.
+async function resolveQuery(q){
+ const c=crsOf(q);
+ const out={ids:[],coord:c?`${c[2]},${c[3]}`:null,name:c?c[1]:q};
+ try{
+  const s=await resolveStop((c?c[1]:q).replace(/\s*\(.*\)$/,""),"national-rail,overground,tube,elizabeth-line,dlr");
+  out.ids=s.ids;out.coord=out.coord||s.coord;if(!c)out.name=s.name;
+ }catch(e){if(!out.coord)throw new Error(`Couldn't find a station called “${q}”`)}
+ return out;
 }
 async function planJourney(trip){
  if(!stops)stops={};
- for(const n of [trip.from,trip.to])if(!stops[n])stops[n]=await resolveStop(n,"national-rail,overground");
- const A=stops[trip.from],B=stops[trip.to];
+ for(const n of [trip.fromQ,trip.toQ])if(!stops[n])stops[n]=await resolveQuery(n);
+ const A=stops[trip.fromQ],B=stops[trip.toQ];
  const tries=[];
  A.ids.slice(0,2).forEach(a=>B.ids.slice(0,2).forEach(b=>tries.push([a,b])));
  if(A.coord&&B.coord)tries.push([A.coord,B.coord]);
  let last;
  for(const [a,b] of tries){
-  for(const q of ["?mode=national-rail,overground,tube,walking&timeIs=Departing","?timeIs=Departing"]){
+  for(const q of ["?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing","?timeIs=Departing"]){
    try{const r=await get(`/Journey/JourneyResults/${encodeURIComponent(a)}/to/${encodeURIComponent(b)}${q}`);if(r.journeys)return r.journeys}
    catch(e){last=e}
   }
@@ -396,41 +462,74 @@ async function planJourney(trip){
 // Before 13:00 UK time you're heading to Woodgrange Park; from 13:00 you're heading home to Ockendon.
 // A tapped tab (or a #to-… bookmark) overrides that until you tap the automatic direction again.
 function autoKey(){const h=+new Date().toLocaleString("en-GB",{timeZone:"Europe/London",hour:"2-digit",hour12:false});return h<13?"to-woodgrange":"to-ockendon"}
-function tripKey(){const h=location.hash.slice(1);return TRIPS[h]?h:autoKey()}
-function trip(){return TRIPS[tripKey()]}
+// "#go/<from>/<to>" is any journey; each end is a station name, a 3-letter code or a TfL stop id.
+function parseCustom(){const m=location.hash.match(/^#go\/([^/]+)\/([^/]+)$/);if(!m)return null;try{return[decodeURIComponent(m[1]),decodeURIComponent(m[2])]}catch{return null}}
+const goHash=(f,t)=>`#go/${encodeURIComponent(f)}/${encodeURIComponent(t)}`;
+function tripKey(){if(parseCustom())return"custom";const h=location.hash.slice(1);return TRIPS[h]?h:autoKey()}
+function trip(){
+ const c=parseCustom();
+ if(c)return{custom:true,fromQ:c[0],toQ:c[1],from:labelOf(c[0]),to:labelOf(c[1])};
+ const t=TRIPS[tripKey()];return{...t,fromQ:t.from,toQ:t.to};
+}
+const clearHash=()=>history.replaceState(null,"",location.pathname+location.search);
 for(const a of [$("dirOut"),$("dirBack")])a.addEventListener("click",e=>{
- if(a.getAttribute("href").slice(1)===autoKey()){e.preventDefault();history.replaceState(null,"",location.pathname+location.search);check()}
+ if(a.getAttribute("href").slice(1)===autoKey()){e.preventDefault();clearHash();check()}
 });
+$("dirNote").addEventListener("click",e=>{if(e.target.id==="backAuto"){e.preventDefault();clearHash();check()}});
 
-let running=false;
+// Builds route legs from TfL's first suggested journey; alternative lines on one leg count as "either".
+function legsFromJourney(j){
+ if(!j)return[];
+ return(j.legs||[]).filter(l=>l.mode?.id!=="walking"&&l.mode?.id!=="cycle").map(l=>{
+  const ids=[...new Set((l.routeOptions||[]).map(o=>o.lineIdentifier?.id).filter(Boolean))];
+  return{from:clean(l.departurePoint?.commonName),to:clean(l.arrivalPoint?.commonName),
+   lines:ids.length?ids:[l.mode?.id||"unknown"],either:ids.length>1,mode:l.mode?.id,
+   naptan:l.departurePoint?.naptanId,dirs:[...new Set((l.routeOptions||[]).flatMap(o=>o.directions||[]).map(d=>clean(d).toLowerCase()).filter(Boolean))]};
+ });
+}
+
+let running=false,currentLines=new Set();
 async function check(){
  if(running)return;running=true;failures.length=0;
+ await CRSP;
  const T=trip(),key=tripKey();
- const manual=!!TRIPS[location.hash.slice(1)];
- $("dirNote").textContent=manual&&key!==autoKey()?"You picked this direction":`Auto: ${key==="to-woodgrange"?"it's morning, so heading out":"it's after 1pm, so heading home"}`;
+ const manual=key==="custom"||!!TRIPS[location.hash.slice(1)];
+ const setTitle=()=>{$("question").textContent=`Is my journey to ${T.to} fucked?`;document.title=`Fucked? · ${T.to}`};
+ if(key==="custom")$("dirNote").innerHTML=`${esc(T.from)} to ${esc(T.to)} · <a href="${esc(goHash(T.toQ,T.fromQ))}">Reverse it</a> · <a href="#" id="backAuto">Back to my commute</a>`;
+ else $("dirNote").textContent=manual&&key!==autoKey()?"You picked this direction":`Auto: ${key==="to-woodgrange"?"it's morning, so heading out":"it's after 1pm, so heading home"}`;
  $("dirOut").setAttribute("aria-current",key==="to-woodgrange"?"page":"false");
  $("dirBack").setAttribute("aria-current",key==="to-ockendon"?"page":"false");
- $("question").textContent=`Is my journey to ${T.to} fucked?`;
- document.title=`Fucked? · ${T.to}`;
+ $("dirOther").setAttribute("aria-current",key==="custom"?"page":"false");
+ setTitle();
  $("updated").innerHTML=`<span class="pulse">Checking…</span>`;
 
  const [byMode,jr]=await Promise.all([loadNetwork(),planJourney(T).then(j=>({j}),e=>({e}))]);
- const status={};
+ if(T.custom){T.from=stops?.[T.fromQ]?.name||T.from;T.to=stops?.[T.toQ]?.name||T.to;setTitle()}
  Object.values(byMode).flat().forEach(l=>RAW[l.id]=l);
- for(const k of ["c2c","district","suffragette"]){const l=findLine(byMode,k);if(l){status[k]=lineState(l);RAW[k]=l}}
- const statusOk=Object.keys(status).length>0;
- if(status.c2c&&status.c2c.state==="bad"&&status.c2c.reasons.length&&!status.c2c.reasons.some(r=>MY_STOPS.test(r))){status.c2c.state="warn";status.c2c.offRoute=true}
-
- const legs=T.legs.map(leg=>{
-  const per=leg.lines.map(id=>({id,...(status[id]||{state:"warn",label:"Status unknown",reasons:[]})}));
-  const pick=leg.either?per.reduce((a,b)=>RANK[b.state]<RANK[a.state]?b:a):per.reduce((a,b)=>RANK[b.state]>RANK[a.state]?b:a);
+ for(const k of ["c2c","district","suffragette"]){const l=findLine(byMode,k);if(l)RAW[k]=l}
+ const statusOk=Object.values(byMode).flat().length>0;
+ const js=jr.j||[];
+ const tLegs=T.custom?legsFromJourney(js[0]):T.legs;
+ const rel=relevance(T,tLegs);
+ const st=id=>{
+  const l=statusOk&&RAW[id];
+  if(!l)return{state:"na",label:id==="bus"||id==="unknown"?"No live status":"Status unknown",reasons:[]};
+  const s=lineState(l);
+  if(l.modeName==="national-rail"&&s.state==="bad"&&s.reasons.length&&!s.reasons.some(r=>rel.test(r))){s.state="warn";s.offRoute=true}
+  return s;
+ };
+ const legs=tLegs.map(leg=>{
+  const per=leg.lines.map(id=>({id,...st(id)}));
+  const known=per.filter(p=>p.state!=="na"),pool=known.length?known:per;
+  const pick=leg.either?pool.reduce((a,b)=>RANK[b.state]<RANK[a.state]?b:a):pool.reduce((a,b)=>RANK[b.state]>RANK[a.state]?b:a);
   return{...leg,per,state:pick.state};
  });
- renderRoute(T,legs);
- renderJourneys(jr.j||[],jr.e);
- renderVerdict(legs,jr.j||[],!statusOk,jr.e);
+ currentLines=new Set(legs.flatMap(l=>l.lines));
+ renderRoute(T,legs,jr.e);
+ renderJourneys(js,jr.e);
+ renderVerdict(T,legs,js,!statusOk,jr.e);
  renderNetwork(byMode);
- loadLive(T);
+ loadLive(T,legs);
  $("debugBox").hidden=!failures.length;
  $("debug").textContent=failures.join("\n");
  $("updated").textContent="Checked "+ukTime(new Date());
@@ -524,11 +623,11 @@ function speak(){
  $("sub").textContent=sub;
  $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")()}</svg>`;
 }
-function renderVerdict(legs,journeys,noStatus,jErr){
- const names=l=>l.per.filter(p=>p.state===l.state).map(p=>LINES[p.id].name).join(" and ");
+function renderVerdict(T,legs,journeys,noStatus,jErr){
+ const names=l=>l.per.filter(p=>p.state===l.state).map(p=>lname(p.id)).join(" and ");
  const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
  let level,ctx={};
- if(noStatus&&jErr)level="dunno";
+ if(noStatus||(T.custom&&jErr)||(T.custom&&journeys.length&&!legs.length))level="dunno";
  else if(closed.length&&!bad.length){level="closed";ctx={line:closed.map(names).join(" and ")}}
  else if(bad.length){level="yes";ctx={line:bad.map(names).join(" and "),from:bad[0].from,to:bad[0].to}}
  else if(!journeys.length&&!jErr)level="none";
@@ -537,18 +636,22 @@ function renderVerdict(legs,journeys,noStatus,jErr){
  verdictCtx={level,ctx};speak();
 }
 
-function renderRoute(T,legs){
- const word={good:"Running fine",warn:"Delays",bad:"Fucked",closed:"Closed"};
+function renderRoute(T,legs,jErr){
+ const word={good:"Running fine",warn:"Delays",bad:"Fucked",closed:"Closed",na:"No live status"};
+ if(!legs.length){$("route").innerHTML=`<p class="${jErr?"err":"empty"}" style="padding:10px 0">${jErr?`TfL couldn't plan this journey: ${esc(jErr.message)}`:"No route found right now."}</p>`;return}
  let html="";
  legs.forEach((leg,i)=>{
   html+=`<div class="stop"><i></i>${esc(leg.from)}</div>`;
   const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
-  const why=leg.per.filter(p=>p.state!=="good").map(p=>{
+  const why=leg.per.filter(p=>p.state!=="good"&&p.state!=="na").map(p=>{
    const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
-   return `<p class="why"><b>${esc(LINES[p.id].name)}:</b> ${richText(r,200)}${p.offRoute?" (doesn't look like it hits your stops)":""} <button type="button" class="morebtn" data-line="${p.id}">Details ›</button></p>`}).join("");
-  html+=`<div class="leg ${leg.state==="bad"||leg.state==="closed"?"broken":leg.state==="warn"?"wobbly":""}" style="--lc:${LINES[main.id].color}">
+   return `<p class="why"><b>${esc(lname(p.id))}:</b> ${richText(r,200)}${p.offRoute?" (doesn't look like it hits your stops)":""} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
+  const pill=p=>RAW[p.id]
+   ?`<button type="button" class="pill pillbtn" data-line="${esc(p.id)}" style="${lsty(p.id)}" aria-label="${esc(lname(p.id))} status details">${esc(lname(p.id))} ›</button>`
+   :`<span class="pill" style="${lsty(p.id)}">${esc(p.id==="bus"?"Bus":lname(p.id))}</span>`;
+  html+=`<div class="leg ${leg.state==="bad"||leg.state==="closed"?"broken":leg.state==="warn"?"wobbly":""}" style="--lc:${lcol(main.id)}">
    <div class="rail"><span></span></div><div class="info"><div class="lines">`+
-   leg.per.map(p=>`<button type="button" class="pill pillbtn" data-line="${p.id}" style="--lc:${LINES[p.id].color}" aria-label="${esc(LINES[p.id].name)} status details">${esc(LINES[p.id].name)} ›</button>`).join(leg.either?`<small style="color:var(--muted)">or</small>`:"")+
+   leg.per.map(pill).join(leg.either?`<small style="color:var(--muted)">or</small>`:"")+
    `<span class="state ${leg.state}">${word[leg.state]}</span></div>${why}</div></div>`;
   if(i===legs.length-1)html+=`<div class="stop"><i></i>${esc(leg.to)}</div>`;
  });
@@ -566,36 +669,54 @@ function renderJourneys(js,err){
   const chips=legs.map(l=>{
    if(l.mode?.id==="walking")return`<small>walk ${l.duration}m</small>`;
    const n=(l.routeOptions?.[0]?.name||l.mode?.name||"").trim();
-   const key=/district/i.test(n)?"district":/suffragette/i.test(n)?"suffragette":/c2c/i.test(n)||l.mode?.id==="national-rail"?"c2c":null;
-   return`<span class="pill" style="--lc:${key?LINES[key].color:"var(--muted)"}">${esc(key?LINES[key].name:n)}</span>`}).join(`<small>›</small>`);
+   const key=l.routeOptions?.[0]?.lineIdentifier?.id||(/district/i.test(n)?"district":/suffragette/i.test(n)?"suffragette":/c2c/i.test(n)?"c2c":null);
+   const label=l.mode?.id==="bus"?`Bus ${n}`:(key&&(LINES[key]?.name||RAW[key]?.name))||n;
+   return`<span class="pill" style="${key?lsty(key):"--lc:var(--muted)"}">${esc(label)}</span>`}).join(`<small>›</small>`);
   return`<div class="j ${dis.length||(j.legs||[]).some(l=>l.isDisrupted)?"dis":""}"><span class="t">${hm(j.startDateTime)}</span>
    <span class="legs">${chips}</span><span class="arr">arr ${hm(j.arrivalDateTime)}<br>${j.duration} min</span>
    ${dis.length?`<p class="note">${richText([...new Set(dis)][0],140)} <button type="button" class="morebtn" data-jdis="${journeyDis.push([...new Set(dis)])-1}">Details ›</button></p>`:""}</div>`}).join("");
 }
 
-async function loadLive(T){
- $("live").innerHTML=T.boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="--lc:${LINES[b.line].color}">${LINES[b.line].name}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("");
+async function loadLive(T,legs){
+ // Your commute uses hand-tuned boards; any other journey gets one board per Tube, Overground, Elizabeth line or DLR leg.
+ const boards=T.custom
+  ?legs.filter(l=>LIVE_MODES.includes(l.mode)&&l.naptan).slice(0,3).map(l=>({line:l.lines[0],lines:l.lines,title:`${l.from} to ${l.to}`,naptan:l.naptan,dirs:l.dirs}))
+  :T.boards;
+ if(!boards.length){$("live").innerHTML=`<p class="empty">No live times for this journey. TfL only publishes live times for the Tube, Overground, Elizabeth line and DLR.</p>`;return}
+ $("live").innerHTML=boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="${lsty(b.line)}">${esc(lname(b.line))}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("");
  const cache={};
- await Promise.all(T.boards.map(async(b,i)=>{
+ await Promise.all(boards.map(async(b,i)=>{
   try{
-   const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
-   const rows=a.filter(x=>b.station.test(x.stationName||"")&&b.dest(x.destinationName||x.towards||"")).sort((x,y)=>x.timeToStation-y.timeToStation).slice(0,5);
+   let rows,mixed=false;
+   if(b.naptan){
+    const a=(await get(`/StopPoint/${encodeURIComponent(b.naptan)}/Arrivals`)).filter(x=>b.lines.includes(x.lineId));
+    const dest=x=>clean(x.destinationName||x.towards||"").toLowerCase();
+    const mine=b.dirs.length?a.filter(x=>b.dirs.includes(dest(x))||b.dirs.some(d=>(x.towards||"").toLowerCase().includes(d))):[];
+    rows=mine.length?mine:a;mixed=!mine.length&&a.length>0;
+   }else{
+    const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
+    rows=a.filter(x=>b.station.test(x.stationName||"")&&b.dest(x.destinationName||x.towards||""));
+   }
+   rows=rows.sort((x,y)=>x.timeToStation-y.timeToStation).slice(0,5);
    $("lb"+i).innerHTML=rows.length?rows.map(x=>`<div class="row"><span>${esc(clean(x.destinationName||x.towards))}${x.platformName&&x.platformName!=="null"?` · ${esc(x.platformName)}`:""}</span><span class="m">${mins(x.timeToStation)}</span></div>`).join("")
+     +(mixed?`<p class="empty">Showing both directions. Check the destination.</p>`:"")
     :`<p class="empty">No trains showing right now.</p>`;
   }catch(e){$("lb"+i).innerHTML=`<p class="err">Couldn't load: ${esc(e.message)}</p>`}
  }));
 }
 
 function renderNetwork(byMode){
- const pick=m=>(byMode[m]||[]).filter(l=>m!=="national-rail"||isC2c(l));
+ // From National Rail, show c2c plus any train company on the journey you're checking.
+ const pick=m=>(byMode[m]||[]).filter(l=>m!=="national-rail"||isC2c(l)||currentLines.has(l.id));
  const groups=MODES.filter(([m])=>pick(m).length);
  if(!groups.length){$("network").innerHTML=`<p class="err">Couldn't load TfL line status.</p>`;$("netsum").innerHTML="";return}
  const n={good:0,warn:0,bad:0,closed:0};
  const html=groups.map(([m,label])=>{
+  if(m==="national-rail")label=pick(m).length===1?pick(m)[0].name:"National Rail";
   const ls=pick(m).map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
   ls.forEach(x=>n[x.s.state]++);
   const issues=ls.filter(x=>x.s.state!=="good").length;
-  const body=`<div class="lines">`+ls.map(({l,s})=>`<button type="button" data-line="${esc(l.id)}" class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${COLORS[l.id]||"var(--muted)"}" aria-label="${esc(l.name)}: ${esc(s.label)}. More info"><span class="bar"></span><span class="b">
+  const body=`<div class="lines">`+ls.map(({l,s})=>`<button type="button" data-line="${esc(l.id)}" class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${lcol(l.id)}" aria-label="${esc(l.name)}: ${esc(s.label)}. More info"><span class="bar"></span><span class="b">
     <span class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></span>
     <span class="more">${s.reasons.length?"Why? Tap for details ›":"More info ›"}</span></span></button>`).join("")+`</div>`;
   const head=`<h3>${esc(label)}<small>${issues?`${issues} with problems`:"All good"}</small></h3>`;
@@ -605,6 +726,65 @@ function renderNetwork(byMode){
  $("netsum").innerHTML=`<span class="chip good">${n.good} good</span>`+(n.warn?`<span class="chip warn">${n.warn} with delays</span>`:"")+
   (n.bad?`<span class="chip bad">${n.bad} severe or suspended</span>`:"")+(n.closed?`<span class="chip closed">${n.closed} closed</span>`:"");
 }
+
+/* ---------- journey picker ---------- */
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+function showPicker(open){
+ $("picker").hidden=!open;$("dirOther").setAttribute("aria-expanded",open);
+ if(!open)return;
+ const c=parseCustom();
+ if(c){$("pkFrom").value=fieldText(c[0]);$("pkTo").value=fieldText(c[1])}
+ renderRecent();$("pkHint").classList.remove("err");
+ (c?$("pkTo"):$("pkFrom")).focus();
+}
+const fieldText=q=>{const c=crsOf(q);return c?`${c[1]} (${c[0]})`:q};
+$("dirOther").addEventListener("click",e=>{e.preventDefault();showPicker($("picker").hidden)});
+$("pkSwap").onclick=()=>{const a=$("pkFrom").value;$("pkFrom").value=$("pkTo").value;$("pkTo").value=a};
+
+let sugTimer,sugCtl;
+function suggest(inp){
+ clearTimeout(sugTimer);sugCtl?.abort();
+ const v=inp.value.trim().toLowerCase();
+ if(v.length<2||/\([a-z]{3}\)$/.test(v)){$("stnList").innerHTML="";return}
+ const starts=CRSLIST.filter(s=>s[0].toLowerCase()===v||s[1].toLowerCase().startsWith(v)||s[1].toLowerCase().startsWith("london "+v));
+ const within=CRSLIST.filter(s=>!starts.includes(s)&&s[1].toLowerCase().includes(v));
+ const opts=new Map([...starts.slice(0,10),...within.slice(0,4)].map(s=>[`${s[1]} (${s[0]})`,"National Rail"]));
+ const render=()=>{$("stnList").innerHTML=[...opts].map(([val,k])=>`<option value="${esc(val)}">${esc(k)}</option>`).join("")};
+ render();
+ if(v.length<3)return;
+ // Tube, DLR and Elizabeth line stations aren't in the code list, so ask TfL too.
+ sugTimer=setTimeout(async()=>{
+  sugCtl=new AbortController();
+  try{
+   const r=await(await fetch(`${API}/StopPoint/Search/${encodeURIComponent(v)}?modes=tube,dlr,elizabeth-line,overground&maxResults=8`,{signal:sugCtl.signal})).json();
+   // Skip TfL names that are the same station as a National Rail one ("Stratford" vs "Stratford (London) (SRA)").
+   const base=k=>k.toLowerCase().replace(/\s*\([^)]*\)/g,"").replace(/^london\s+/,"").trim();
+   const have=new Set([...opts.keys()].map(base));
+   const tfl=new Map();
+   (r.matches||[]).forEach(m=>{const n=clean(m.name);if(!have.has(base(n))&&!tfl.has(n))tfl.set(n,(m.modes||[]).includes("tube")?"Tube":"TfL")});
+   const merged=new Map([...tfl,...opts]);opts.clear();merged.forEach((v,k)=>opts.set(k,v));
+   render();
+  }catch{}
+ },250);
+}
+for(const id of ["pkFrom","pkTo"])$(id).addEventListener("input",e=>suggest(e.target));
+
+function renderRecent(){
+ const r=store.get("jf-recent",[]);
+ $("recent").innerHTML=r.length?`<span>Recent:</span>`+r.map(([f,t])=>`<a href="${esc(goHash(f,t))}">${esc(labelOf(f))} → ${esc(labelOf(t))}</a>`).join(""):"";
+}
+$("picker").addEventListener("submit",e=>{
+ e.preventDefault();
+ const f=queryOf($("pkFrom").value),t=queryOf($("pkTo").value);
+ const hint=$("pkHint");
+ if(!f||!t){hint.textContent="Fill in both stations.";hint.classList.add("err");return}
+ if(f.toLowerCase()===t.toLowerCase()){hint.textContent="That's the same station twice. Even c2c can't fuck that up.";hint.classList.add("err");return}
+ store.set("jf-recent",[[f,t],...store.get("jf-recent",[]).filter(([a,b])=>!(a===f&&b===t))].slice(0,6));
+ showPicker(false);
+ const h=goHash(f,t);
+ if(location.hash===h)check();else location.hash=h;
+});
+addEventListener("hashchange",()=>showPicker(false));
 
 $("refresh").onclick=check;
 $("reroll").onclick=speak;
