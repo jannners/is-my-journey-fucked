@@ -134,7 +134,7 @@ footer{color:var(--muted);font-size:.78rem}
   </section>
 
   <section>
-    <h2>Every TfL line right now</h2>
+    <h2>Every line right now</h2>
     <div class="netsum" id="netsum"></div>
     <div id="network"><p class="empty">Loading…</p></div>
   </section>
@@ -199,7 +199,9 @@ function lineState(l){
 }
 
 /* ---------- network status: whole-network calls, one per mode as a fallback ---------- */
-const MODES=[["tube","Underground"],["overground","London Overground"],["elizabeth-line","Elizabeth line"],["dlr","DLR"],["tram","Trams"],["national-rail","National Rail"]];
+// National Rail is fetched only for c2c, and is listed first.
+const MODES=[["national-rail","c2c"],["tube","Underground"],["overground","London Overground"],["elizabeth-line","Elizabeth line"],["dlr","DLR"]];
+const isC2c=l=>l.id==="c2c"||/^c2c$/i.test(l.name);
 async function loadNetwork(){
  const byMode={};
  try{
@@ -340,20 +342,19 @@ async function loadLive(T){
 }
 
 function renderNetwork(byMode){
- const groups=MODES.filter(([m])=>byMode[m]?.length);
+ const pick=m=>(byMode[m]||[]).filter(l=>m!=="national-rail"||isC2c(l));
+ const groups=MODES.filter(([m])=>pick(m).length);
  if(!groups.length){$("network").innerHTML=`<p class="err">Couldn't load TfL line status.</p>`;$("netsum").innerHTML="";return}
  const n={good:0,warn:0,bad:0,closed:0};
  const html=groups.map(([m,label])=>{
-  const ls=byMode[m].map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
+  const ls=pick(m).map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
   ls.forEach(x=>n[x.s.state]++);
   const issues=ls.filter(x=>x.s.state!=="good").length;
   const body=`<div class="lines">`+ls.map(({l,s})=>`<div class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${COLORS[l.id]||"var(--muted)"}"><div class="bar"></div><div class="b">
     <div class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></div>
     ${s.reasons.length?`<details><summary>Details</summary><p>${s.reasons.map(esc).join("<br><br>")}</p></details>`:""}</div></div>`).join("")+`</div>`;
   const head=`<h3>${esc(label)}<small>${issues?`${issues} with problems`:"All good"}</small></h3>`;
-  // National Rail is long, so tuck it away unless something's wrong.
-  return m==="national-rail"?`<div class="group"><details class="more" ${issues?"open":""}><summary>${esc(label)} · ${issues?`${issues} with problems`:"all good"}</summary>${body}</details></div>`
-   :`<div class="group">${head}${body}</div>`;
+  return `<div class="group">${head}${body}</div>`;
  }).join("");
  $("network").innerHTML=html;
  $("netsum").innerHTML=`<span class="chip good">${n.good} good</span>`+(n.warn?`<span class="chip warn">${n.warn} with delays</span>`:"")+
