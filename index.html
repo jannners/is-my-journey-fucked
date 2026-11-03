@@ -14,6 +14,8 @@
   --good:#18864b; --warn:#d07a00; --bad:#d3202f; --closed:#6b7280;
   --c2c:#B7007C; --district:#00782A; --suffragette:#18A95D;
   --verdict:var(--fg);
+  --sun:#f2b705; --moon:#e8d9a0; --leaf:#6b8f2a; --leaf2:#c4741c; --shell:#b98a4e;
+  --flame1:#ff6a13; --flame2:#ffc21a; --weed:#a3814f; --board:#14161b; --amber:#ffb000;
   --font-display:"Anton","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
   --font-body:"Overpass",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:"Red Hat Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -43,6 +45,52 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .verdict[data-v="bit"]{--verdict:var(--warn)}
 .verdict[data-v="yes"]{--verdict:var(--bad)}
 .verdict[data-v="closed"]{--verdict:var(--closed)}
+.verdict{display:grid;justify-items:start}
+.answer{cursor:pointer}
+.scene{width:100%;max-width:380px;margin-top:14px}
+.scene svg{width:100%;height:auto;display:block;overflow:visible}
+.reroll{margin-top:6px;font-size:.8rem;color:var(--muted)}
+.sign{font:700 11px var(--font-mono);fill:var(--amber)}
+.sign.red{fill:#ff4d4d}
+.huh{font:400 54px var(--font-display);fill:var(--fg)}
+.zzz{font:700 16px var(--font-mono);fill:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+ .sleepers{animation:slide .5s linear infinite}
+ @keyframes slide{to{stroke-dashoffset:-18}}
+ .bob{animation:bob .35s ease-in-out infinite alternate}
+ @keyframes bob{to{transform:translateY(-2px)}}
+ .puff{animation:puff 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ .p2{animation-delay:-.6s}.p3{animation-delay:-1.2s}
+ @keyframes puff{0%{transform:translate(0,0) scale(.6);opacity:.8}100%{transform:translate(40px,-50px) scale(1.8);opacity:0}}
+ .spin{animation:spin 12s linear infinite}
+ @keyframes spin{to{transform:rotate(360deg)}}
+ .cross{animation:cross 5s linear infinite}
+ @keyframes cross{from{transform:translateX(-110px)}to{transform:translateX(380px)}}
+ .crawl{animation:crawl 26s linear infinite}
+ @keyframes crawl{from{transform:translateX(0)}to{transform:translateX(480px)}}
+ .snail{animation:snail 9s linear infinite}
+ @keyframes snail{from{transform:translate(-40px,128px)}to{transform:translate(380px,128px)}}
+ .dots circle{animation:dot 1.2s ease-in-out infinite}
+ .dots circle:nth-child(2){animation-delay:.2s}.dots circle:nth-child(3){animation-delay:.4s}
+ @keyframes dot{50%{opacity:.15}}
+ .leafd{animation:fall 3.6s linear infinite;transform-box:fill-box;transform-origin:center}
+ @keyframes fall{from{transform:translate(0,0) rotate(0)}to{transform:translate(-30px,125px) rotate(300deg)}}
+ .flame{animation:flick .4s ease-in-out infinite alternate}
+ @keyframes flick{from{transform:scaleY(.8) scaleX(1.05)}to{transform:scaleY(1.15) scaleX(.92)}}
+ .smoke{animation:smoke 3s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ @keyframes smoke{from{transform:translate(0,0) scale(.5);opacity:.7}to{transform:translate(20px,-60px) scale(1.6);opacity:0}}
+ .tumble{animation:tumble 4s linear infinite}
+ @keyframes tumble{0%{transform:translate(-30px,94px) rotate(0)}25%{transform:translate(70px,80px) rotate(200deg)}50%{transform:translate(170px,94px) rotate(400deg)}75%{transform:translate(270px,82px) rotate(600deg)}100%{transform:translate(390px,94px) rotate(800deg)}}
+ .blink{animation:blink 1s steps(2) infinite}
+ @keyframes blink{to{opacity:.2}}
+ .twinkle{animation:blink 1.6s ease-in-out infinite}
+ .zzz{animation:zz 2.4s ease-out infinite}
+ .z2{animation-delay:.6s}.z3{animation-delay:1.2s}
+ @keyframes zz{from{opacity:0;transform:translateY(8px)}30%{opacity:1}to{opacity:0;transform:translateY(-18px)}}
+ .huh{animation:huh 1.2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom}
+ @keyframes huh{to{transform:translateY(-8px) rotate(8deg)}}
+}
+@media (prefers-reduced-motion:reduce){.tumble{transform:translate(170px,94px)}.snail{transform:translate(200px,128px)}.crawl{transform:translateX(230px)}.cross{transform:translateX(130px)}}
 
 h2{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 h3{margin:0}
@@ -116,6 +164,8 @@ footer{color:var(--muted);font-size:.78rem}
     <p class="q" id="question">Is my journey fucked?</p>
     <p class="answer small pulse" id="answer">Checking</p>
     <p class="sub" id="sub">Asking TfL how bad it is…</p>
+    <div class="scene" id="scene" aria-hidden="false"></div>
+    <button class="reroll" id="reroll" type="button">Say it another way</button>
   </section>
 
   <section>
@@ -280,17 +330,91 @@ async function check(){
  running=false;
 }
 
+/* ---------- verdict wording: a pool per level, rotated each check ---------- */
+const SAY={
+ yes:{big:["Yes","Fucked","Yep","Totally","Utterly"],sub:[
+  "Totally fucked. {line} is buggered between {from} and {to}.",
+  "Absolutely fucked. {line} has given up between {from} and {to}.",
+  "Royally fucked. {line} between {from} and {to} is going nowhere.",
+  "Fucked six ways from Sunday. {line} is down between {from} and {to}.",
+  "It's a shitshow. {line} has fallen over between {from} and {to}.",
+  "Proper fucked. Kiss your evening goodbye, because {line} is broken between {from} and {to}.",
+  "Thoroughly fucked. {line} between {from} and {to} is having a full meltdown."]},
+ none:{big:["Yes","Fucked","Yep"],sub:[
+  "TfL can't find a single way to get you there right now. Proper fucked.",
+  "There's literally no route. You're fucked. Start walking.",
+  "Journey planner has given up on you. Fucked."]},
+ bit:{big:["A bit","Sort of","Kinda","Slightly","Ish"],sub:[
+  "A bit fucked. {line} is having a wobble, so leave a bit earlier.",
+  "Mildly fucked. {line} has delays. Bring a snack.",
+  "Semi-fucked. {line} is running slow. Pretend you meant to be late.",
+  "Fucked-ish. {line} is dragging its feet. Allow extra time.",
+  "Slightly fucked. {line} is crawling along. Text ahead.",
+  "Fucked, but only a little bit. {line} has delays."]},
+ no:{big:["No","Nope","Nah","Not today"],sub:[
+  "Not fucked. Everything's running. Go and get your train.",
+  "Unfucked. Miracles do happen. Go.",
+  "Not even slightly fucked. Enjoy it while it lasts.",
+  "All clear. c2c and TfL are behaving themselves for once.",
+  "Smooth as you like. Nothing's broken. Get moving.",
+  "Zero fucks required. Everything's on time-ish."]},
+ closed:{big:["Yes","Kinda","Night night"],sub:[
+  "Well, sort of. {line} has shut for the night. Get an Uber or go to bed.",
+  "Fucked by the clock. {line} has gone home. You should too.",
+  "{line} is tucked up in bed. Taxi or sofa, your call.",
+  "Nothing's broken, it's just shut. {line} is done for the night."]},
+ dunno:{big:["Dunno","No idea","Who knows"],sub:[
+  "TfL isn't answering, so it might be fucked, it might not. Try again in a minute.",
+  "Your guess is as good as mine. TfL has gone quiet.",
+  "Schrödinger's commute. Could be fucked, could be fine. Check again shortly."]}
+};
+// Original animated scenes for each level, drawn here so nothing can fail to load.
+const TRAIN=(x,y,extra="")=>`<g transform="translate(${x} ${y})" ${extra}><rect x="0" y="0" width="96" height="34" rx="8" fill="var(--c2c)"/><rect x="0" y="0" width="96" height="34" rx="8" fill="none" stroke="var(--fg)" stroke-width="2.5"/>
+ <rect x="10" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="32" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="54" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><path d="M78 7h8a4 4 0 0 1 4 4v8h-12z" fill="var(--panel)"/>
+ <circle cx="20" cy="38" r="6" fill="var(--fg)"/><circle cx="76" cy="38" r="6" fill="var(--fg)"/></g>`;
+const TRACK=y=>`<line x1="0" y1="${y}" x2="360" y2="${y}" stroke="var(--fg)" stroke-width="3"/><line class="sleepers" x1="0" y1="${y+6}" x2="360" y2="${y+6}" stroke="var(--muted)" stroke-width="5" stroke-dasharray="4 14"/>`;
+const SCENES={
+ no:[
+  ()=>`${TRACK(112)}<g class="bob">${TRAIN(130,68)}</g><circle class="puff p1" cx="210" cy="60" r="7" fill="var(--muted)"/><circle class="puff p2" cx="210" cy="60" r="9" fill="var(--muted)"/><circle class="puff p3" cx="210" cy="60" r="6" fill="var(--muted)"/>`,
+  ()=>`<g class="spin" style="transform-origin:300px 34px"><circle cx="300" cy="34" r="14" fill="var(--sun)"/>${[0,45,90,135,180,225,270,315].map(a=>`<line x1="300" y1="12" x2="300" y2="4" stroke="var(--sun)" stroke-width="3" stroke-linecap="round" transform="rotate(${a} 300 34)"/>`).join("")}</g>${TRACK(112)}<g class="cross">${TRAIN(0,68)}</g>`],
+ bit:[
+  ()=>`${TRACK(112)}<g class="crawl">${TRAIN(-100,68)}</g><g class="snail"><path d="M0 0h26q6 0 6-6" fill="none" stroke="var(--leaf)" stroke-width="5" stroke-linecap="round"/><circle cx="12" cy="-9" r="10" fill="var(--shell)" stroke="var(--fg)" stroke-width="2"/><path d="M12-9m-4 0a4 4 0 1 1 6 3" fill="none" stroke="var(--fg)" stroke-width="2"/><line x1="30" y1="-6" x2="34" y2="-15" stroke="var(--leaf)" stroke-width="2"/></g>`,
+  ()=>`${TRACK(112)}${TRAIN(130,68)}<g class="dots"><circle cx="246" cy="52" r="4" fill="var(--fg)"/><circle cx="260" cy="52" r="4" fill="var(--fg)"/><circle cx="274" cy="52" r="4" fill="var(--fg)"/></g>${[30,90,160,240,300].map((x,i)=>`<ellipse class="leafd" style="animation-delay:${i*-.9}s" cx="${x}" cy="-10" rx="7" ry="4" fill="var(--leaf2)"/>`).join("")}`],
+ yes:[
+  ()=>`${TRACK(112)}<g transform="rotate(-8 180 90)">${TRAIN(130,68)}</g>${[0,1,2].map(i=>`<path class="flame" style="animation-delay:${i*-.25}s;transform-origin:${150+i*28}px 70px" d="M${150+i*28} 72 q-12-14 0-34 q4 12 10 8 q6 16-10 26z" fill="var(--flame${i%2+1})"/>`).join("")}${[0,1,2].map(i=>`<circle class="smoke" style="animation-delay:${i*-1}s" cx="${165+i*12}" cy="40" r="${10+i*3}" fill="var(--muted)"/>`).join("")}`,
+  ()=>`<line x1="0" y1="112" x2="360" y2="112" stroke="var(--fg)" stroke-width="3"/><rect x="40" y="40" width="4" height="72" fill="var(--fg)"/><rect x="14" y="24" width="96" height="26" rx="3" fill="var(--board)"/><text x="62" y="42" text-anchor="middle" class="sign">NO TRAINS</text><g class="tumble"><circle r="18" fill="none" stroke="var(--weed)" stroke-width="2.5"/><path d="M-14-6q10 14 26 2M-10 10q8-18 22-6M-4-16q-2 18 12 26" fill="none" stroke="var(--weed)" stroke-width="2"/></g>`,
+  ()=>`<rect x="40" y="14" width="280" height="112" rx="8" fill="var(--board)"/>${["Upminster","Barking","Woodgrange Pk"].map((n,i)=>`<text x="58" y="${46+i*30}" class="sign">${n}</text><text x="302" y="${46+i*30}" text-anchor="end" class="sign red blink" style="animation-delay:${i*.3}s">CANCELLED</text>`).join("")}`],
+ none:[()=>SCENES.yes[1]()],
+ closed:[
+  ()=>`<circle cx="300" cy="34" r="16" fill="var(--moon)"/><circle cx="308" cy="28" r="14" fill="var(--bg)"/>${[[40,20],[110,40],[200,16],[250,52]].map(([x,y],i)=>`<circle class="twinkle" style="animation-delay:${i*.6}s" cx="${x}" cy="${y}" r="2.5" fill="var(--moon)"/>`).join("")}${TRACK(112)}${TRAIN(130,68)}<text class="zzz z1" x="230" y="64">z</text><text class="zzz z2" x="240" y="56">z</text><text class="zzz z3" x="252" y="46">Z</text>`],
+ dunno:[
+  ()=>`${TRACK(112)}${TRAIN(130,68)}<text class="huh" x="178" y="56" text-anchor="middle">?</text>`]
+};
+let lastPick={};
+function pickFrom(arr,key){if(arr.length<2)return arr[0];let i;do{i=Math.floor(Math.random()*arr.length)}while(i===lastPick[key]);lastPick[key]=i;return arr[i]}
+let verdictCtx=null;
+function speak(){
+ if(!verdictCtx)return;
+ const {level,ctx}=verdictCtx,pool=SAY[level];
+ const big=pickFrom(pool.big,level+"b");
+ const sub=pickFrom(pool.sub,level+"s").replace(/\{(\w+)\}/g,(_,k)=>ctx[k]||"");
+ const v=$("verdict"),a=$("answer");
+ v.dataset.v=level==="none"?"yes":level==="dunno"?"closed":level;
+ a.textContent=big;a.classList.remove("pulse");a.classList.toggle("small",big.length>4);
+ $("sub").textContent=sub;
+ $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")()}</svg>`;
+}
 function renderVerdict(legs,journeys,noStatus,jErr){
- const v=$("verdict"),a=$("answer"),s=$("sub");a.classList.remove("pulse");
- const set=(cls,ans,sub,small)=>{v.dataset.v=cls;a.textContent=ans;a.classList.toggle("small",!!small);s.textContent=sub};
- if(noStatus&&jErr)return set("closed","Dunno","TfL isn't answering, so it might be fucked, it might not. Try again in a minute.",true);
  const names=l=>l.per.filter(p=>p.state===l.state).map(p=>LINES[p.id].name).join(" and ");
  const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
- if(closed.length&&!bad.length)return set("closed","Yes",`Well, sort of. ${closed.map(names).join(" and ")} has shut for the night. Get an Uber or go to bed.`);
- if(bad.length)return set("yes","Yes",`Totally fucked. ${bad.map(names).join(" and ")} is buggered between ${bad[0].from} and ${bad[0].to}.`);
- if(!journeys.length&&!jErr)return set("yes","Yes","TfL can't find a single way to get you there right now. Proper fucked.");
- if(warn.length)return set("bit","A bit",`A bit fucked. ${warn.map(names).join(" and ")} is having a wobble, so leave a bit earlier.`,true);
- return set("no","No","Not fucked. Everything's running. Go and get your train.");
+ let level,ctx={};
+ if(noStatus&&jErr)level="dunno";
+ else if(closed.length&&!bad.length){level="closed";ctx={line:closed.map(names).join(" and ")}}
+ else if(bad.length){level="yes";ctx={line:bad.map(names).join(" and "),from:bad[0].from,to:bad[0].to}}
+ else if(!journeys.length&&!jErr)level="none";
+ else if(warn.length){level="bit";ctx={line:warn.map(names).join(" and ")}}
+ else level="no";
+ verdictCtx={level,ctx};speak();
 }
 
 function renderRoute(T,legs){
@@ -362,6 +486,8 @@ function renderNetwork(byMode){
 }
 
 $("refresh").onclick=check;
+$("reroll").onclick=speak;
+$("answer").onclick=speak;
 addEventListener("hashchange",check);
 setInterval(()=>{if(!document.hidden)check()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});
