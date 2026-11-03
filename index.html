@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Is My Journey Fucked?</title>
+<meta name="theme-color" content="#111214">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Overpass:wght@400;600;800&family=Red+Hat+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: direction switch, one giant verdict, a three-leg route strip coloured by status, journeys, live trains, then every TfL line. */
+:root{
+  --bg:#f3f1ec; --panel:#ffffff; --fg:#17171a; --muted:#666a73; --line:#dcd9d2;
+  --good:#18864b; --warn:#d07a00; --bad:#d3202f; --closed:#6b7280;
+  --c2c:#B7007C; --district:#00782A; --suffragette:#18A95D;
+  --verdict:var(--fg);
+  --font-display:"Anton","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
+  --font-body:"Overpass",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"Red Hat Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111214; --panel:#1a1b1f; --fg:#ededee; --muted:#9a9ea8; --line:#2a2c32;
+  --good:#3fcf7e; --warn:#ffa630; --bad:#ff4d5a; --closed:#8a93a3; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--font-body);
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left))}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:26px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.85rem}
+button{font:600 .85rem var(--font-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.dir{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.dir a{padding:8px 14px;font-weight:800;font-size:.9rem;text-decoration:none;color:var(--muted)}
+.dir a[aria-current="page"]{background:var(--fg);color:var(--bg)}
+
+.q{font:600 .95rem var(--font-body);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 4px}
+.answer{font:400 clamp(5.5rem,30vw,12rem)/.86 var(--font-display);margin:0;color:var(--verdict);letter-spacing:-.01em;text-transform:uppercase}
+.answer.small{font-size:clamp(3.2rem,16vw,7rem)}
+.sub{font-size:1.15rem;font-weight:600;margin:12px 0 0;max-width:36ch;text-wrap:balance}
+.verdict[data-v="no"]{--verdict:var(--good)}
+.verdict[data-v="bit"]{--verdict:var(--warn)}
+.verdict[data-v="yes"]{--verdict:var(--bad)}
+.verdict[data-v="closed"]{--verdict:var(--closed)}
+
+h2{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+h3{margin:0}
+
+.route{display:grid;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 16px}
+.stop{display:flex;align-items:center;gap:12px;font-weight:800;padding:6px 0}
+.stop i{width:14px;height:14px;border-radius:50%;border:3px solid var(--fg);background:var(--panel);flex:none;margin-left:5px}
+.leg{display:grid;grid-template-columns:24px 1fr;gap:12px;min-height:56px}
+.leg .rail{display:flex;justify-content:center}
+.leg .rail span{width:6px;border-radius:3px;background:var(--lc)}
+.leg .info{padding:6px 0;min-width:0}
+.leg .lines{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:.75rem;font-weight:800;color:#fff;background:var(--lc);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.state{font-size:.85rem;font-weight:800}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)} .closed{color:var(--closed)}
+.leg.broken .rail span{background:repeating-linear-gradient(180deg,var(--bad) 0 8px,transparent 8px 13px)}
+.leg.wobbly .rail span{background:repeating-linear-gradient(180deg,var(--warn) 0 14px,transparent 14px 18px)}
+.why{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+.why b{color:var(--fg)}
+
+.jlist{display:grid;gap:8px}
+.j{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center}
+.j.dis{border-color:var(--warn)}
+.j .t{font:700 1.35rem var(--font-mono);font-variant-numeric:tabular-nums}
+.j .arr{font:500 .9rem var(--font-mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.j .legs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;min-width:0}
+.j .legs small{color:var(--muted);font-size:.75rem}
+.j .note{grid-column:1/-1;font-size:.82rem;color:var(--warn);margin:0}
+.live{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.board{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.board h3{margin:0 0 8px;font-size:.95rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line);font-size:.9rem}
+.row:first-of-type{border-top:0}
+.row .m{font:700 .95rem var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty,.err{font-size:.88rem;color:var(--muted);margin:4px 0}
+.err{color:var(--bad)}
+
+/* all lines */
+.netsum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.group{margin-bottom:16px}
+.group h3{font-size:.95rem;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+.group h3 small{font-weight:600;color:var(--muted);font-size:.8rem}
+.lines{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:6px}
+.ln{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:grid;grid-template-columns:6px 1fr;overflow:hidden}
+.ln .bar{background:var(--lc)}
+.ln .b{padding:7px 10px;min-width:0}
+.ln .top2{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ln .n{font-weight:800;font-size:.92rem}
+.ln .s{font-size:.78rem;font-weight:800;text-align:right}
+.ln.warnb{border-color:var(--warn)} .ln.badb{border-color:var(--bad)}
+.ln details summary{cursor:pointer;font-size:.78rem;color:var(--muted);margin-top:3px}
+.ln details p{font-size:.8rem;color:var(--muted);margin:4px 0 0}
+details.more>summary{cursor:pointer;font-weight:700;font-size:.9rem;margin-bottom:8px}
+.debug{font:.75rem var(--font-mono);color:var(--muted);white-space:pre-wrap;word-break:break-word}
+footer{color:var(--muted);font-size:.78rem}
+@media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.4s ease-in-out infinite}@keyframes p{50%{opacity:.4}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <nav class="dir" aria-label="Direction">
+      <a href="#to-woodgrange" id="dirOut">To Woodgrange Park</a>
+      <a href="#to-ockendon" id="dirBack">To Ockendon</a>
+    </nav>
+    <span><span id="updated">Checking…</span> <button id="refresh" type="button">Check again</button></span>
+  </div>
+
+  <section class="verdict" id="verdict" data-v="">
+    <p class="q" id="question">Is my journey fucked?</p>
+    <p class="answer small pulse" id="answer">Checking</p>
+    <p class="sub" id="sub">Asking TfL how bad it is…</p>
+  </section>
+
+  <section>
+    <h2>Your route</h2>
+    <div class="route" id="route"></div>
+  </section>
+
+  <section>
+    <h2>Next journeys</h2>
+    <div class="jlist" id="journeys"><p class="empty">Loading journeys…</p></div>
+  </section>
+
+  <section>
+    <h2>Live trains for your changes</h2>
+    <div class="live" id="live"></div>
+  </section>
+
+  <section>
+    <h2>Every TfL line right now</h2>
+    <div class="netsum" id="netsum"></div>
+    <div id="network"><p class="empty">Loading…</p></div>
+  </section>
+
+  <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
+
+  <footer>Line status, journeys and live Overground and Tube times from TfL Open Data. c2c times are timetabled, since TfL doesn't publish live c2c train times. Updates every minute.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const API="https://api.tfl.gov.uk";
+const failures=[];
+async function get(p){
+ let r;
+ try{r=await fetch(API+p)}catch(e){failures.push(`${p} → network error`);throw new Error("couldn't reach TfL")}
+ if(!r.ok){let msg="";try{msg=(await r.json()).message||""}catch{}failures.push(`${p} → ${r.status}${msg?" "+msg:""}`);throw new Error(`TfL said ${r.status}${msg?": "+msg:""}`)}
+ return r.json();
+}
+const ukTime=d=>d.toLocaleTimeString("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit"});
+const clean=s=>String(s||"").replace(/\s+(Underground|Rail|DLR)?\s*Station$/i,"").replace(/\s+\(.*\)$/,"");
+const mins=s=>s<60?"Due":Math.round(s/60)+" min";
+
+const COLORS={bakerloo:"#B36305",central:"#E32017",circle:"#FFD300",district:"#00782A","hammersmith-city":"#F3A9BB",jubilee:"#A0A5A9",
+ metropolitan:"#9B0056",northern:"#2b2b2b",piccadilly:"#003688",victoria:"#0098D4","waterloo-city":"#95CDBA",
+ liberty:"#61686B",lioness:"#FFA600",mildmay:"#006FE6",suffragette:"#18A95D",weaver:"#9B0058",windrush:"#DC241F",
+ elizabeth:"#6950A1",dlr:"#00A4A7",tram:"#5FB526",c2c:"#B7007C","great-northern":"#00A1E4","london-cable-car":"#E21836"};
+const LINES={c2c:{name:"c2c",color:"var(--c2c)"},district:{name:"District",color:"var(--district)"},suffragette:{name:"Suffragette",color:"var(--suffragette)"}};
+
+const TRIPS={
+ "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",legs:[
+  {from:"Ockendon",to:"Upminster",lines:["c2c"]},
+  {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true},
+  {from:"Barking",to:"Woodgrange Park",lines:["suffragette"]}],
+  boards:[
+   {line:"district",title:"Upminster to Barking",station:/upminster/i,dest:x=>!/upminster/i.test(x)},
+   {line:"suffragette",title:"Barking to Woodgrange Park",station:/^barking\b(?!.*riverside)/i,dest:x=>!/riverside|barking/i.test(x)}]},
+ "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",legs:[
+  {from:"Woodgrange Park",to:"Barking",lines:["suffragette"]},
+  {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true},
+  {from:"Upminster",to:"Ockendon",lines:["c2c"]}],
+  boards:[
+   {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
+   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,dest:x=>/upminster/i.test(x)}]}
+};
+const MY_STOPS=/ockendon|upminster|grays|chafford|barking|west horndon|tilbury|all lines|whole|entire|all c2c/i;
+
+const RANK={good:0,warn:1,closed:2,bad:3};
+function classify(sev){
+ if(sev===10||sev===18||sev===19)return"good";
+ if(sev===20||sev===16||sev===0)return"closed";
+ if([9,7,8,14,17].includes(sev))return"warn";
+ return"bad";
+}
+function lineState(l){
+ const sts=l?.lineStatuses?.length?l.lineStatuses:[{statusSeverity:10,statusSeverityDescription:"Good Service"}];
+ const worst=sts.reduce((a,s)=>s.statusSeverity<a.statusSeverity?s:a);
+ const reasons=[...new Set(sts.map(s=>s.reason).filter(Boolean))];
+ return{state:classify(worst.statusSeverity),sev:worst.statusSeverity,label:[...new Set(sts.map(s=>s.statusSeverityDescription))].join(", "),reasons};
+}
+
+/* ---------- network status: whole-network calls, one per mode as a fallback ---------- */
+const MODES=[["tube","Underground"],["overground","London Overground"],["elizabeth-line","Elizabeth line"],["dlr","DLR"],["tram","Trams"],["national-rail","National Rail"]];
+async function loadNetwork(){
+ const byMode={};
+ try{
+  const all=await get(`/Line/Mode/${MODES.map(m=>m[0]).join(",")}/Status`);
+  all.forEach(l=>(byMode[l.modeName]=byMode[l.modeName]||[]).push(l));
+ }catch{
+  await Promise.all(MODES.map(async([m])=>{try{byMode[m]=await get(`/Line/Mode/${m}/Status`)}catch{}}));
+ }
+ return byMode;
+}
+function findLine(byMode,key){
+ const all=Object.values(byMode).flat();
+ return all.find(l=>l.id===key)||all.find(l=>l.name.toLowerCase()===key)||null;
+}
+
+let stops=null;
+async function resolveStop(name,modes){
+ const r=await get(`/StopPoint/Search/${encodeURIComponent(name)}?modes=${modes}&maxResults=8`);
+ const ms=(r.matches||[]).filter(x=>x.name.toLowerCase().startsWith(name.toLowerCase()));
+ const list=ms.length?ms:(r.matches||[]);
+ if(!list.length)throw new Error("TfL couldn't find "+name);
+ // Prefer the rail station's own code, then a hub, then anything; keep coordinates as a last resort.
+ const ids=[...list.filter(m=>/^910G/.test(m.id)),...list.filter(m=>/^HUB/.test(m.id)),...list].map(m=>m.id);
+ return{ids:[...new Set(ids)].slice(0,3),coord:list[0].lat?`${list[0].lat},${list[0].lon}`:null};
+}
+async function planJourney(trip){
+ if(!stops)stops={};
+ for(const n of [trip.from,trip.to])if(!stops[n])stops[n]=await resolveStop(n,"national-rail,overground");
+ const A=stops[trip.from],B=stops[trip.to];
+ const tries=[];
+ A.ids.slice(0,2).forEach(a=>B.ids.slice(0,2).forEach(b=>tries.push([a,b])));
+ if(A.coord&&B.coord)tries.push([A.coord,B.coord]);
+ let last;
+ for(const [a,b] of tries){
+  for(const q of ["?mode=national-rail,overground,tube,walking&timeIs=Departing","?timeIs=Departing"]){
+   try{const r=await get(`/Journey/JourneyResults/${encodeURIComponent(a)}/to/${encodeURIComponent(b)}${q}`);if(r.journeys)return r.journeys}
+   catch(e){last=e}
+  }
+ }
+ throw last||new Error("no journeys");
+}
+
+function trip(){return TRIPS[location.hash.slice(1)]||TRIPS[(()=>{try{return localStorage.getItem("jf-dir")}catch{return null}})()]||TRIPS["to-woodgrange"]}
+function tripKey(){return Object.keys(TRIPS).find(k=>TRIPS[k]===trip())}
+
+let running=false;
+async function check(){
+ if(running)return;running=true;failures.length=0;
+ const T=trip(),key=tripKey();
+ try{localStorage.setItem("jf-dir",key)}catch{}
+ $("dirOut").setAttribute("aria-current",key==="to-woodgrange"?"page":"false");
+ $("dirBack").setAttribute("aria-current",key==="to-ockendon"?"page":"false");
+ $("question").textContent=`Is my journey to ${T.to} fucked?`;
+ document.title=`Fucked? · ${T.to}`;
+ $("updated").innerHTML=`<span class="pulse">Checking…</span>`;
+
+ const [byMode,jr]=await Promise.all([loadNetwork(),planJourney(T).then(j=>({j}),e=>({e}))]);
+ const status={};
+ for(const k of ["c2c","district","suffragette"]){const l=findLine(byMode,k);if(l)status[k]=lineState(l)}
+ const statusOk=Object.keys(status).length>0;
+ if(status.c2c&&status.c2c.state==="bad"&&status.c2c.reasons.length&&!status.c2c.reasons.some(r=>MY_STOPS.test(r))){status.c2c.state="warn";status.c2c.offRoute=true}
+
+ const legs=T.legs.map(leg=>{
+  const per=leg.lines.map(id=>({id,...(status[id]||{state:"warn",label:"Status unknown",reasons:[]})}));
+  const pick=leg.either?per.reduce((a,b)=>RANK[b.state]<RANK[a.state]?b:a):per.reduce((a,b)=>RANK[b.state]>RANK[a.state]?b:a);
+  return{...leg,per,state:pick.state};
+ });
+ renderRoute(T,legs);
+ renderJourneys(jr.j||[],jr.e);
+ renderVerdict(legs,jr.j||[],!statusOk,jr.e);
+ renderNetwork(byMode);
+ loadLive(T);
+ $("debugBox").hidden=!failures.length;
+ $("debug").textContent=failures.join("\n");
+ $("updated").textContent="Checked "+ukTime(new Date());
+ running=false;
+}
+
+function renderVerdict(legs,journeys,noStatus,jErr){
+ const v=$("verdict"),a=$("answer"),s=$("sub");a.classList.remove("pulse");
+ const set=(cls,ans,sub,small)=>{v.dataset.v=cls;a.textContent=ans;a.classList.toggle("small",!!small);s.textContent=sub};
+ if(noStatus&&jErr)return set("closed","Dunno","TfL isn't answering, so it might be fucked, it might not. Try again in a minute.",true);
+ const names=l=>l.per.filter(p=>p.state===l.state).map(p=>LINES[p.id].name).join(" and ");
+ const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
+ if(closed.length&&!bad.length)return set("closed","Yes",`Well, sort of. ${closed.map(names).join(" and ")} has shut for the night. Get an Uber or go to bed.`);
+ if(bad.length)return set("yes","Yes",`Totally fucked. ${bad.map(names).join(" and ")} is buggered between ${bad[0].from} and ${bad[0].to}.`);
+ if(!journeys.length&&!jErr)return set("yes","Yes","TfL can't find a single way to get you there right now. Proper fucked.");
+ if(warn.length)return set("bit","A bit",`A bit fucked. ${warn.map(names).join(" and ")} is having a wobble, so leave a bit earlier.`,true);
+ return set("no","No","Not fucked. Everything's running. Go and get your train.");
+}
+
+function renderRoute(T,legs){
+ const word={good:"Running fine",warn:"Delays",bad:"Fucked",closed:"Closed"};
+ let html="";
+ legs.forEach((leg,i)=>{
+  html+=`<div class="stop"><i></i>${esc(leg.from)}</div>`;
+  const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
+  const why=leg.per.filter(p=>p.state!=="good").map(p=>{
+   const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
+   return `<p class="why"><b>${esc(LINES[p.id].name)}:</b> ${esc(r.length>200?r.slice(0,197)+"…":r)}${p.offRoute?" (doesn't look like it hits your stops)":""}</p>`}).join("");
+  html+=`<div class="leg ${leg.state==="bad"||leg.state==="closed"?"broken":leg.state==="warn"?"wobbly":""}" style="--lc:${LINES[main.id].color}">
+   <div class="rail"><span></span></div><div class="info"><div class="lines">`+
+   leg.per.map(p=>`<span class="pill" style="--lc:${LINES[p.id].color}">${esc(LINES[p.id].name)}</span>`).join(leg.either?`<small style="color:var(--muted)">or</small>`:"")+
+   `<span class="state ${leg.state}">${word[leg.state]}</span></div>${why}</div></div>`;
+  if(i===legs.length-1)html+=`<div class="stop"><i></i>${esc(leg.to)}</div>`;
+ });
+ $("route").innerHTML=html;
+}
+
+function renderJourneys(js,err){
+ if(err){$("journeys").innerHTML=`<p class="err">Couldn't get journeys: ${esc(err.message)}</p>`;return}
+ if(!js.length){$("journeys").innerHTML=`<p class="empty">No journeys found right now.</p>`;return}
+ const hm=s=>String(s||"").slice(11,16);
+ $("journeys").innerHTML=js.slice(0,5).map(j=>{
+  const legs=(j.legs||[]).filter(l=>l.mode?.id!=="walking"||l.duration>4);
+  const dis=(j.legs||[]).flatMap(l=>(l.disruptions||[]).map(d=>d.description)).filter(Boolean);
+  const chips=legs.map(l=>{
+   if(l.mode?.id==="walking")return`<small>walk ${l.duration}m</small>`;
+   const n=(l.routeOptions?.[0]?.name||l.mode?.name||"").trim();
+   const key=/district/i.test(n)?"district":/suffragette/i.test(n)?"suffragette":/c2c/i.test(n)||l.mode?.id==="national-rail"?"c2c":null;
+   return`<span class="pill" style="--lc:${key?LINES[key].color:"var(--muted)"}">${esc(key?LINES[key].name:n)}</span>`}).join(`<small>›</small>`);
+  return`<div class="j ${dis.length||(j.legs||[]).some(l=>l.isDisrupted)?"dis":""}"><span class="t">${hm(j.startDateTime)}</span>
+   <span class="legs">${chips}</span><span class="arr">arr ${hm(j.arrivalDateTime)}<br>${j.duration} min</span>
+   ${dis.length?`<p class="note">${esc([...new Set(dis)][0].slice(0,180))}</p>`:""}</div>`}).join("");
+}
+
+async function loadLive(T){
+ $("live").innerHTML=T.boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="--lc:${LINES[b.line].color}">${LINES[b.line].name}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("");
+ const cache={};
+ await Promise.all(T.boards.map(async(b,i)=>{
+  try{
+   const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
+   const rows=a.filter(x=>b.station.test(x.stationName||"")&&b.dest(x.destinationName||x.towards||"")).sort((x,y)=>x.timeToStation-y.timeToStation).slice(0,5);
+   $("lb"+i).innerHTML=rows.length?rows.map(x=>`<div class="row"><span>${esc(clean(x.destinationName||x.towards))}${x.platformName&&x.platformName!=="null"?` · ${esc(x.platformName)}`:""}</span><span class="m">${mins(x.timeToStation)}</span></div>`).join("")
+    :`<p class="empty">No trains showing right now.</p>`;
+  }catch(e){$("lb"+i).innerHTML=`<p class="err">Couldn't load: ${esc(e.message)}</p>`}
+ }));
+}
+
+function renderNetwork(byMode){
+ const groups=MODES.filter(([m])=>byMode[m]?.length);
+ if(!groups.length){$("network").innerHTML=`<p class="err">Couldn't load TfL line status.</p>`;$("netsum").innerHTML="";return}
+ const n={good:0,warn:0,bad:0,closed:0};
+ const html=groups.map(([m,label])=>{
+  const ls=byMode[m].map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
+  ls.forEach(x=>n[x.s.state]++);
+  const issues=ls.filter(x=>x.s.state!=="good").length;
+  const body=`<div class="lines">`+ls.map(({l,s})=>`<div class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${COLORS[l.id]||"var(--muted)"}"><div class="bar"></div><div class="b">
+    <div class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></div>
+    ${s.reasons.length?`<details><summary>Details</summary><p>${s.reasons.map(esc).join("<br><br>")}</p></details>`:""}</div></div>`).join("")+`</div>`;
+  const head=`<h3>${esc(label)}<small>${issues?`${issues} with problems`:"All good"}</small></h3>`;
+  // National Rail is long, so tuck it away unless something's wrong.
+  return m==="national-rail"?`<div class="group"><details class="more" ${issues?"open":""}><summary>${esc(label)} · ${issues?`${issues} with problems`:"all good"}</summary>${body}</details></div>`
+   :`<div class="group">${head}${body}</div>`;
+ }).join("");
+ $("network").innerHTML=html;
+ $("netsum").innerHTML=`<span class="chip good">${n.good} good</span>`+(n.warn?`<span class="chip warn">${n.warn} with delays</span>`:"")+
+  (n.bad?`<span class="chip bad">${n.bad} severe or suspended</span>`:"")+(n.closed?`<span class="chip closed">${n.closed} closed</span>`:"");
+}
+
+$("refresh").onclick=check;
+addEventListener("hashchange",check);
+setInterval(()=>{if(!document.hidden)check()},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});
+check();
+})();
+</script>
+</body>
+</html>
