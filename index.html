@@ -142,8 +142,26 @@ h3{margin:0}
 .ln .n{font-weight:800;font-size:.92rem}
 .ln .s{font-size:.78rem;font-weight:800;text-align:right}
 .ln.warnb{border-color:var(--warn)} .ln.badb{border-color:var(--bad)}
-.ln details summary{cursor:pointer;font-size:.78rem;color:var(--muted);margin-top:3px}
-.ln details p{font-size:.8rem;color:var(--muted);margin:4px 0 0}
+button.ln{font:inherit;color:inherit;text-align:left;padding:0;width:100%;cursor:pointer}
+button.ln:hover{border-color:var(--muted)}
+.ln .b{display:block}
+.ln .top2{display:flex}
+.ln .more{display:block;font-size:.76rem;color:var(--muted);margin-top:3px}
+.pillbtn{border:0;cursor:pointer;font-family:var(--font-body)}
+.morebtn{border:0;background:none;padding:0 2px;font-size:.82rem;font-weight:800;color:var(--fg);text-decoration:underline;text-underline-offset:2px}
+a.ext{color:var(--fg);font-weight:800;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.pop{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);padding:0;width:min(560px,calc(100vw - 32px));max-height:min(80vh,680px)}
+.pop::backdrop{background:#000a}
+.pophead{display:grid;grid-template-columns:8px 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+.popbar{align-self:stretch;border-radius:4px;background:var(--lc)}
+.pophead h3{font-size:1.15rem;margin:0}
+.pophead form{margin:0}
+.popbody{padding:14px 16px 18px;display:grid;gap:10px;font-size:.95rem}
+.popbody p{margin:0}
+.popstate{font-weight:800;font-size:1.05rem}
+.when{font-size:.85rem;color:var(--muted)}
+.popblock{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+.poplinks{display:flex;flex-wrap:wrap;gap:8px 16px;border-top:1px solid var(--line);padding-top:12px}
 details.more>summary{cursor:pointer;font-weight:700;font-size:.9rem;margin-bottom:8px}
 .debug{font:.75rem var(--font-mono);color:var(--muted);white-space:pre-wrap;word-break:break-word}
 footer{color:var(--muted);font-size:.78rem}
@@ -188,6 +206,11 @@ footer{color:var(--muted);font-size:.78rem}
     <div class="netsum" id="netsum"></div>
     <div id="network"><p class="empty">Loading…</p></div>
   </section>
+
+  <dialog id="pop" class="pop" aria-labelledby="popTitle">
+    <div class="pophead"><span class="popbar"></span><h3 id="popTitle"></h3><form method="dialog"><button type="submit" id="popClose">Close</button></form></div>
+    <div class="popbody" id="popBody"></div>
+  </dialog>
 
   <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
 
@@ -268,6 +291,80 @@ function findLine(byMode,key){
 }
 
 let stops=null;
+const RAW={};          // line id -> TfL line object, for the details popup
+let journeyDis=[];     // disruption texts per journey card
+
+/* ---------- links inside status text ---------- */
+const URL_RE=/(?:https?:)?\/\/[^\s<>"')]+|\bwww\.[^\s<>"')]+/gi;
+function linkLabel(u){
+ try{const x=new URL(u);const h=x.hostname.replace(/^www\./,"");
+  if(/nationalrail/.test(h))return"National Rail notice";
+  if(/tfl\.gov\.uk/.test(h))return"TfL notice";
+  if(/c2c/.test(h))return"c2c notice";
+  return h;}catch{return"Link"}
+}
+function normUrl(u){u=u.replace(/[.,;:]+$/,"");if(u.startsWith("//"))return"https:"+u;if(/^www\./i.test(u))return"https://"+u;return u}
+const linkHtml=u=>{const n=normUrl(u);return `<a class="ext" href="${esc(n)}" target="_blank" rel="noopener noreferrer">${esc(linkLabel(n))} ↗</a>`};
+// Escapes text, shortens the words (never a link), and turns every link into a clickable one.
+function richText(s,max){
+ s=String(s||"");
+ if(!max){ // full text: keep links where they sit in the sentence
+  let out="",last=0;
+  for(const m of s.matchAll(URL_RE)){out+=esc(s.slice(last,m.index))+linkHtml(m[0]);last=m.index+m[0].length}
+  return out+esc(s.slice(last));
+ }
+ const urls=s.match(URL_RE)||[];
+ let text=s.replace(URL_RE," ").replace(/\s+/g," ").replace(/\s+([.,])/g,"$1").trim().replace(/[:\-–]\s*$/,"").trim();
+ if(max&&text.length>max)text=text.slice(0,max-1).trimEnd()+"…";
+ const links=[...new Set(urls.map(normUrl))].map(linkHtml).join(" ");
+ return (text?esc(text):"")+(text&&links?" ":"")+links;
+}
+
+/* ---------- details popup ---------- */
+function tflLinks(l){
+ const id=l.id,mode=l.modeName,out=[];
+ if(isC2c(l)){out.push(["National Rail disruptions","https://www.nationalrail.co.uk/status-and-disruptions/"],["c2c website","https://www.c2c-online.co.uk/"]);return out}
+ if(mode==="tube")out.push([`${l.name} line on TfL`,`https://tfl.gov.uk/tube/route/${id}/`]);
+ if(mode==="overground")out.push([`${l.name} line on TfL`,`https://tfl.gov.uk/overground/route/${id}/`]);
+ if(mode==="dlr")out.push(["DLR on TfL","https://tfl.gov.uk/dlr/route/dlr/"]);
+ out.push(["All TfL service status","https://tfl.gov.uk/tube-dlr-overground/status/"]);
+ return out;
+}
+const fmtDate=s=>{try{return new Date(s).toLocaleString("en-GB",{timeZone:"Europe/London",weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}catch{return s}};
+function openPopup(title,color,html){
+ $("popTitle").textContent=title;$("pop").style.setProperty("--lc",color||"var(--muted)");$("popBody").innerHTML=html;
+ const d=$("pop");if(d.showModal){if(!d.open)d.showModal()}else d.setAttribute("open","");
+}
+async function openLine(key){
+ const l=RAW[key];if(!l)return;
+ const s=lineState(l);
+ const color=COLORS[l.id]||(LINES[key]?.color)||"var(--muted)";
+ const sts=l.lineStatuses||[];
+ let html=`<p class="popstate ${s.state}">${esc(s.label)}</p>`;
+ sts.filter(x=>x.reason||x.validityPeriods?.length).forEach(x=>{
+  if(x.reason)html+=`<p>${richText(x.reason)}</p>`;
+  const vp=(x.validityPeriods||[]).filter(v=>v.fromDate&&v.toDate);
+  if(vp.length)html+=`<p class="when">${vp.slice(0,3).map(v=>`${fmtDate(v.fromDate)} to ${fmtDate(v.toDate)}${v.isNow?" (now)":""}`).join("<br>")}</p>`;
+ });
+ if(!sts.some(x=>x.reason))html+=`<p class="note">No problems reported on this line.</p>`;
+ html+=`<div id="popDis"></div><div class="poplinks">${tflLinks(l).map(([t,u])=>`<a class="ext" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(t)} ↗</a>`).join("")}</div>`;
+ openPopup(l.name,color,html);
+ if(!sts.some(x=>x.reason))return;
+ try{
+  const d=await get(`/Line/${encodeURIComponent(l.id)}/Disruption`);
+  const extra=d.filter(x=>x.additionalInfo||x.affectedStops?.length||x.closureText);
+  if(!extra.length||!$("popDis"))return;
+  $("popDis").innerHTML=extra.map(x=>{
+   const stopsAff=[...new Set((x.affectedStops||[]).map(a=>clean(a.commonName)))];
+   return `<div class="popblock">${x.additionalInfo?`<p>${richText(x.additionalInfo)}</p>`:""}${stopsAff.length?`<p class="when"><b>Stations affected:</b> ${esc(stopsAff.slice(0,30).join(", "))}${stopsAff.length>30?"…":""}</p>`:""}</div>`}).join("");
+ }catch{}
+}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-line]");if(b){openLine(b.dataset.line);return}
+ const j=e.target.closest("[data-jdis]");
+ if(j){const list=journeyDis[+j.dataset.jdis]||[];openPopup("Disruption on this journey","var(--warn)",list.map(t=>`<p>${richText(t)}</p>`).join("")+
+  `<div class="poplinks"><a class="ext" href="https://tfl.gov.uk/tube-dlr-overground/status/" target="_blank" rel="noopener noreferrer">All TfL service status ↗</a><a class="ext" href="https://www.nationalrail.co.uk/status-and-disruptions/" target="_blank" rel="noopener noreferrer">National Rail disruptions ↗</a></div>`)}
+});
 async function resolveStop(name,modes){
  const r=await get(`/StopPoint/Search/${encodeURIComponent(name)}?modes=${modes}&maxResults=8`);
  const ms=(r.matches||[]).filter(x=>x.name.toLowerCase().startsWith(name.toLowerCase()));
@@ -310,7 +407,8 @@ async function check(){
 
  const [byMode,jr]=await Promise.all([loadNetwork(),planJourney(T).then(j=>({j}),e=>({e}))]);
  const status={};
- for(const k of ["c2c","district","suffragette"]){const l=findLine(byMode,k);if(l)status[k]=lineState(l)}
+ Object.values(byMode).flat().forEach(l=>RAW[l.id]=l);
+ for(const k of ["c2c","district","suffragette"]){const l=findLine(byMode,k);if(l){status[k]=lineState(l);RAW[k]=l}}
  const statusOk=Object.keys(status).length>0;
  if(status.c2c&&status.c2c.state==="bad"&&status.c2c.reasons.length&&!status.c2c.reasons.some(r=>MY_STOPS.test(r))){status.c2c.state="warn";status.c2c.offRoute=true}
 
@@ -425,10 +523,10 @@ function renderRoute(T,legs){
   const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
   const why=leg.per.filter(p=>p.state!=="good").map(p=>{
    const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
-   return `<p class="why"><b>${esc(LINES[p.id].name)}:</b> ${esc(r.length>200?r.slice(0,197)+"…":r)}${p.offRoute?" (doesn't look like it hits your stops)":""}</p>`}).join("");
+   return `<p class="why"><b>${esc(LINES[p.id].name)}:</b> ${richText(r,200)}${p.offRoute?" (doesn't look like it hits your stops)":""} <button type="button" class="morebtn" data-line="${p.id}">Details ›</button></p>`}).join("");
   html+=`<div class="leg ${leg.state==="bad"||leg.state==="closed"?"broken":leg.state==="warn"?"wobbly":""}" style="--lc:${LINES[main.id].color}">
    <div class="rail"><span></span></div><div class="info"><div class="lines">`+
-   leg.per.map(p=>`<span class="pill" style="--lc:${LINES[p.id].color}">${esc(LINES[p.id].name)}</span>`).join(leg.either?`<small style="color:var(--muted)">or</small>`:"")+
+   leg.per.map(p=>`<button type="button" class="pill pillbtn" data-line="${p.id}" style="--lc:${LINES[p.id].color}" aria-label="${esc(LINES[p.id].name)} status details">${esc(LINES[p.id].name)} ›</button>`).join(leg.either?`<small style="color:var(--muted)">or</small>`:"")+
    `<span class="state ${leg.state}">${word[leg.state]}</span></div>${why}</div></div>`;
   if(i===legs.length-1)html+=`<div class="stop"><i></i>${esc(leg.to)}</div>`;
  });
@@ -439,6 +537,7 @@ function renderJourneys(js,err){
  if(err){$("journeys").innerHTML=`<p class="err">Couldn't get journeys: ${esc(err.message)}</p>`;return}
  if(!js.length){$("journeys").innerHTML=`<p class="empty">No journeys found right now.</p>`;return}
  const hm=s=>String(s||"").slice(11,16);
+ journeyDis=[];
  $("journeys").innerHTML=js.slice(0,5).map(j=>{
   const legs=(j.legs||[]).filter(l=>l.mode?.id!=="walking"||l.duration>4);
   const dis=(j.legs||[]).flatMap(l=>(l.disruptions||[]).map(d=>d.description)).filter(Boolean);
@@ -449,7 +548,7 @@ function renderJourneys(js,err){
    return`<span class="pill" style="--lc:${key?LINES[key].color:"var(--muted)"}">${esc(key?LINES[key].name:n)}</span>`}).join(`<small>›</small>`);
   return`<div class="j ${dis.length||(j.legs||[]).some(l=>l.isDisrupted)?"dis":""}"><span class="t">${hm(j.startDateTime)}</span>
    <span class="legs">${chips}</span><span class="arr">arr ${hm(j.arrivalDateTime)}<br>${j.duration} min</span>
-   ${dis.length?`<p class="note">${esc([...new Set(dis)][0].slice(0,180))}</p>`:""}</div>`}).join("");
+   ${dis.length?`<p class="note">${richText([...new Set(dis)][0],140)} <button type="button" class="morebtn" data-jdis="${journeyDis.push([...new Set(dis)])-1}">Details ›</button></p>`:""}</div>`}).join("");
 }
 
 async function loadLive(T){
@@ -474,9 +573,9 @@ function renderNetwork(byMode){
   const ls=pick(m).map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
   ls.forEach(x=>n[x.s.state]++);
   const issues=ls.filter(x=>x.s.state!=="good").length;
-  const body=`<div class="lines">`+ls.map(({l,s})=>`<div class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${COLORS[l.id]||"var(--muted)"}"><div class="bar"></div><div class="b">
-    <div class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></div>
-    ${s.reasons.length?`<details><summary>Details</summary><p>${s.reasons.map(esc).join("<br><br>")}</p></details>`:""}</div></div>`).join("")+`</div>`;
+  const body=`<div class="lines">`+ls.map(({l,s})=>`<button type="button" data-line="${esc(l.id)}" class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${COLORS[l.id]||"var(--muted)"}" aria-label="${esc(l.name)}: ${esc(s.label)}. More info"><span class="bar"></span><span class="b">
+    <span class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></span>
+    <span class="more">${s.reasons.length?"Why? Tap for details ›":"More info ›"}</span></span></button>`).join("")+`</div>`;
   const head=`<h3>${esc(label)}<small>${issues?`${issues} with problems`:"All good"}</small></h3>`;
   return `<div class="group">${head}${body}</div>`;
  }).join("");
