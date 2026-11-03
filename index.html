@@ -1,14 +1,42 @@
 <!doctype html>
+<!--
+  IS MY JOURNEY FUCKED?
+  =====================
+  A single-page site that checks whether the trip between Ockendon and Woodgrange Park
+  (or any other journey you pick) is running, and says so with a lot of swearing.
+
+  Everything lives in this one file plus stations.json (the list of National Rail station codes).
+  There's no server: the page talks straight to TfL's free public API from the browser.
+
+  Where the data comes from
+    • Line status ........ TfL Unified API  /Line/Mode/{modes}/Status
+    • Journey planning ... TfL Unified API  /Journey/JourneyResults/{from}/to/{to}
+    • Live train times ... TfL Unified API  /Line/{id}/Arrivals and /StopPoint/{id}/Arrivals
+    • Disruption detail .. TfL Unified API  /Line/{id}/Disruption
+    • Station codes ...... stations.json (uk-railway-stations dataset, ODbL licence)
+
+  Quick edits
+    • Change the swearing ........... search for "const SAY="
+    • Change the 1pm switch-over .... search for "function autoKey"
+    • Change the commute route ...... search for "const TRIPS="
+    • Change the animated scenes .... search for "const SCENES="
+-->
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Is My Journey Fucked?</title>
 <meta name="theme-color" content="#111214">
+<!-- Fonts: Anton for the giant YES/NO, Overpass for text, Red Hat Mono for times. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Overpass:wght@400;600;800&family=Red+Hat+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: direction switch, one giant verdict, a three-leg route strip coloured by status, journeys, live trains, then every TfL line. */
+/* Page layout, top to bottom: journey tabs, the giant verdict, the route strip coloured by status,
+   next journeys, live trains, then every line's status. */
+/* ---------- Colours and fonts ----------
+   Every colour is a variable here so light and dark mode can swap them in one place.
+   --good/--warn/--bad/--closed are the traffic-light status colours.
+   The --sun, --moon, --flame etc. colours are only used by the animated cartoon scenes. */
 :root{
   --bg:#f3f1ec; --panel:#ffffff; --fg:#17171a; --muted:#666a73; --line:#dcd9d2;
   --good:#18864b; --warn:#d07a00; --bad:#d3202f; --closed:#6b7280;
@@ -21,18 +49,22 @@
   --font-mono:"Red Hat Mono",ui-monospace,"SF Mono",Menlo,monospace;
   color-scheme:light;
 }
+/* Dark mode: the phone or computer's dark setting swaps in these colours automatically. */
 @media (prefers-color-scheme:dark){:root{
   --bg:#111214; --panel:#1a1b1f; --fg:#ededee; --muted:#9a9ea8; --line:#2a2c32;
   --good:#3fcf7e; --warn:#ffa630; --bad:#ff4d5a; --closed:#8a93a3; color-scheme:dark}}
+/* ---------- Page basics ---------- */
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
+/* The env(safe-area-inset-…) bits keep content clear of the iPhone notch and home bar. */
 body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--font-body);
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left))}
 .wrap{max-width:760px;margin:0 auto;display:grid;gap:26px}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.85rem}
 button{font:600 .85rem var(--font-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
 button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+/* ---------- Top bar: the Woodgrange Park / Ockendon / Elsewhere tabs ---------- */
 .dir{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
 .dir a{padding:8px 14px;font-weight:800;font-size:.9rem;text-decoration:none;color:var(--muted)}
 .dir a[aria-current="page"]{background:var(--fg);color:var(--bg)}
@@ -40,7 +72,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .dirnote a{color:var(--fg);font-weight:700}
 .dir{flex-wrap:wrap}
 .dir a[aria-expanded="true"]{background:var(--line);color:var(--fg)}
+/* On narrow phones, drop the word "To" so all three tabs fit on one row. */
 @media (max-width:480px){.dir a{padding:8px 10px}.dir .to{display:none}}
+/* ---------- "Elsewhere" journey picker (the From/To form) ---------- */
 .picker{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
 .pk-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
 .picker label{display:grid;gap:4px;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);min-width:0}
@@ -56,16 +90,19 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .recent a{font-weight:700;color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;text-decoration:none}
 .na{color:var(--muted)}
 
+/* ---------- The verdict: the giant YES / NO / A BIT ---------- */
 .q{font:600 .95rem var(--font-body);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 4px}
 .answer{font:400 clamp(5.5rem,30vw,12rem)/.86 var(--font-display);margin:0;color:var(--verdict);letter-spacing:-.01em;text-transform:uppercase}
 .answer.small{font-size:clamp(3.2rem,16vw,7rem)}
 .sub{font-size:1.15rem;font-weight:600;margin:12px 0 0;max-width:36ch;text-wrap:balance}
+/* The verdict's colour follows its level: green for no, amber for a bit, red for yes, grey for closed. */
 .verdict[data-v="no"]{--verdict:var(--good)}
 .verdict[data-v="bit"]{--verdict:var(--warn)}
 .verdict[data-v="yes"]{--verdict:var(--bad)}
 .verdict[data-v="closed"]{--verdict:var(--closed)}
 .verdict{display:grid;justify-items:start}
 .answer{cursor:pointer}
+/* ---------- Animated cartoon scenes under the verdict ---------- */
 .scene{width:100%;max-width:380px;margin-top:14px}
 .scene svg{width:100%;height:auto;display:block;overflow:visible}
 .reroll{margin-top:6px;font-size:.8rem;color:var(--muted)}
@@ -73,6 +110,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .sign.red{fill:#ff4d4d}
 .huh{font:400 54px var(--font-display);fill:var(--fg)}
 .zzz{font:700 16px var(--font-mono);fill:var(--muted)}
+/* All the animations live inside this block, so anyone who has turned on "reduce motion"
+   on their device gets still pictures instead. Each class matches a bit of a scene in SCENES (in the script). */
 @media (prefers-reduced-motion:no-preference){
  .sleepers{animation:slide .5s linear infinite}
  @keyframes slide{to{stroke-dashoffset:-18}}
@@ -109,11 +148,16 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
  .huh{animation:huh 1.2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom}
  @keyframes huh{to{transform:translateY(-8px) rotate(8deg)}}
 }
+/* With reduced motion, park the moving things somewhere sensible in the middle of the scene. */
 @media (prefers-reduced-motion:reduce){.tumble{transform:translate(170px,94px)}.snail{transform:translate(200px,128px)}.crawl{transform:translateX(230px)}.cross{transform:translateX(130px)}}
 
+/* ---------- Section headings ---------- */
 h2{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 h3{margin:0}
 
+/* ---------- "Your route": the vertical line with a stop circle at each change ----------
+   Each leg's coloured bar uses the line's colour (--lc). A broken leg turns into a red dashed bar,
+   a delayed one into an amber dashed bar. */
 .route{display:grid;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 16px}
 .stop{display:flex;align-items:center;gap:12px;font-weight:800;padding:6px 0}
 .stop i{width:14px;height:14px;border-radius:50%;border:3px solid var(--fg);background:var(--panel);flex:none;margin-left:5px}
@@ -122,6 +166,7 @@ h3{margin:0}
 .leg .rail span{width:6px;border-radius:3px;background:var(--lc)}
 .leg .info{padding:6px 0;min-width:0}
 .leg .lines{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+/* A pill is a small coloured label with a line's name, like "District". */
 .pill{font-size:.75rem;font-weight:800;color:#fff;background:var(--lc);padding:2px 8px;border-radius:4px;white-space:nowrap}
 .state{font-size:.85rem;font-weight:800}
 .good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)} .closed{color:var(--closed)}
@@ -130,6 +175,7 @@ h3{margin:0}
 .why{font-size:.85rem;color:var(--muted);margin:4px 0 0}
 .why b{color:var(--fg)}
 
+/* ---------- "Next journeys" cards ---------- */
 .jlist{display:grid;gap:8px}
 .j{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center}
 .j.dis{border-color:var(--warn)}
@@ -138,6 +184,7 @@ h3{margin:0}
 .j .legs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;min-width:0}
 .j .legs small{color:var(--muted);font-size:.75rem}
 .j .note{grid-column:1/-1;font-size:.82rem;color:var(--warn);margin:0}
+/* ---------- "Live trains for your changes" boards ---------- */
 .live{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
 .board{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
 .board h3{margin:0 0 8px;font-size:.95rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -147,7 +194,7 @@ h3{margin:0}
 .empty,.err{font-size:.88rem;color:var(--muted);margin:4px 0}
 .err{color:var(--bad)}
 
-/* all lines */
+/* ---------- "Every line right now" ---------- */
 .netsum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .chip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
 .group{margin-bottom:16px}
@@ -161,6 +208,7 @@ h3{margin:0}
 .ln .n{font-weight:800;font-size:.92rem}
 .ln .s{font-size:.78rem;font-weight:800;text-align:right}
 .ln.warnb{border-color:var(--warn)} .ln.badb{border-color:var(--bad)}
+/* Line cards are buttons so you can tap them to open the details popup. */
 button.ln{font:inherit;color:inherit;text-align:left;padding:0;width:100%;cursor:pointer}
 button.ln:hover{border-color:var(--muted)}
 .ln .b{display:block}
@@ -169,6 +217,7 @@ button.ln:hover{border-color:var(--muted)}
 .pillbtn{border:0;cursor:pointer;font-family:var(--font-body)}
 .morebtn{border:0;background:none;padding:0 2px;font-size:.82rem;font-weight:800;color:var(--fg);text-decoration:underline;text-underline-offset:2px}
 a.ext{color:var(--fg);font-weight:800;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+/* ---------- Details popup (a <dialog>) that opens when you tap a line ---------- */
 .pop{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);padding:0;width:min(560px,calc(100vw - 32px));max-height:min(80vh,680px)}
 .pop::backdrop{background:#000a}
 .pophead{display:grid;grid-template-columns:8px 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
@@ -182,13 +231,17 @@ a.ext{color:var(--fg);font-weight:800;text-decoration:underline;text-underline-o
 .popblock{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px}
 .poplinks{display:flex;flex-wrap:wrap;gap:8px 16px;border-top:1px solid var(--line);padding-top:12px}
 details.more>summary{cursor:pointer;font-weight:700;font-size:.9rem;margin-bottom:8px}
+/* ---------- "What went wrong" box: lists any TfL requests that failed ---------- */
 .debug{font:.75rem var(--font-mono);color:var(--muted);white-space:pre-wrap;word-break:break-word}
 footer{color:var(--muted);font-size:.78rem}
+/* The gentle pulsing on "Checking…" while TfL is being asked. */
 @media (prefers-reduced-motion:no-preference){.pulse{animation:p 1.4s ease-in-out infinite}@keyframes p{50%{opacity:.4}}}
 </style>
 </head>
 <body>
+<!-- Everything visible sits inside .wrap, which keeps the page a readable width on big screens. -->
 <div class="wrap">
+  <!-- TOP BAR: journey tabs, a note saying why that direction was chosen, and the Check again button. -->
   <div class="top">
     <nav class="dir" aria-label="Journey">
       <a href="#to-woodgrange" id="dirOut"><span class="to">To </span>Woodgrange Park</a>
@@ -199,6 +252,8 @@ footer{color:var(--muted);font-size:.78rem}
     <span><span id="updated">Checking…</span> <button id="refresh" type="button">Check again</button></span>
   </div>
 
+  <!-- JOURNEY PICKER: hidden until you tap "Elsewhere". The <datalist> is filled with station
+       suggestions as you type (see suggest() in the script). -->
   <form class="picker" id="picker" hidden autocomplete="off">
     <div class="pk-row">
       <label for="pkFrom">From<input id="pkFrom" list="stnList" placeholder="Station or code, e.g. OCK" required></label>
@@ -213,6 +268,8 @@ footer{color:var(--muted);font-size:.78rem}
     <div class="recent" id="recent"></div>
   </form>
 
+  <!-- VERDICT: the question, the giant answer, a funny line, and an animated scene.
+       Tapping the answer or "Say it another way" picks a different line and scene. -->
   <section class="verdict" id="verdict" data-v="">
     <p class="q" id="question">Is my journey fucked?</p>
     <p class="answer small pulse" id="answer">Checking</p>
@@ -221,53 +278,82 @@ footer{color:var(--muted);font-size:.78rem}
     <button class="reroll" id="reroll" type="button">Say it another way</button>
   </section>
 
+  <!-- ROUTE: one row per leg of the journey, coloured by how broken it is. Filled by renderRoute(). -->
   <section>
     <h2>Your route</h2>
     <div class="route" id="route"></div>
   </section>
 
+  <!-- NEXT JOURNEYS: the next five options from TfL's journey planner. Filled by renderJourneys(). -->
   <section>
     <h2>Next journeys</h2>
     <div class="jlist" id="journeys"><p class="empty">Loading journeys…</p></div>
   </section>
 
+  <!-- LIVE TRAINS: real-time arrivals at the stations where you change. Filled by loadLive(). -->
   <section>
     <h2>Live trains for your changes</h2>
     <div class="live" id="live"></div>
   </section>
 
+  <!-- EVERY LINE: status for c2c, the Underground, Overground, Elizabeth line and DLR. Filled by renderNetwork(). -->
   <section>
     <h2>Every line right now</h2>
     <div class="netsum" id="netsum"></div>
     <div id="network"><p class="empty">Loading…</p></div>
   </section>
 
+  <!-- POPUP: shown when you tap a line. method="dialog" on the form makes Close shut it without any script. -->
   <dialog id="pop" class="pop" aria-labelledby="popTitle">
     <div class="pophead"><span class="popbar"></span><h3 id="popTitle"></h3><form method="dialog"><button type="submit" id="popClose">Close</button></form></div>
     <div class="popbody" id="popBody"></div>
   </dialog>
 
+  <!-- Only appears if a TfL request failed, listing which ones. Handy when something breaks. -->
   <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
 
   <footer>Line status, journeys and live Tube, Overground, Elizabeth line and DLR times from TfL Open Data. National Rail times are timetabled, since TfL doesn't publish live times for train companies. Station codes from the uk-railway-stations dataset (ODbL). Updates every minute.</footer>
 </div>
 
 <script>
+/* =====================================================================
+   THE SCRIPT
+   Wrapped in (function(){ … })() so none of these names leak out into the page.
+   How it flows:
+     1. check() runs on load, every minute, and whenever you switch journey.
+     2. It works out which journey to show (commute by time of day, or one you picked).
+     3. It asks TfL for every line's status and for journey options, at the same time.
+     4. It decides how broken each leg is, then draws the verdict, route, journeys,
+        live boards and the every-line list.
+   ===================================================================== */
 (function(){
+/* ---------- Small helpers ---------- */
+// $("x") is shorthand for document.getElementById("x").
+// esc() makes text safe to put into HTML, so a weird station name can't break the page.
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// TfL's public API. No key is needed for this level of use.
 const API="https://api.tfl.gov.uk";
+// Every TfL request that fails gets noted here and shown in the "What went wrong" box.
 const failures=[];
+// Fetches a TfL API path and returns the JSON, or throws a readable error.
+// e.g. get("/Line/district/Status")
 async function get(p){
  let r;
  try{r=await fetch(API+p)}catch(e){failures.push(`${p} → network error`);throw new Error("couldn't reach TfL")}
  if(!r.ok){let msg="";try{msg=(await r.json()).message||""}catch{}failures.push(`${p} → ${r.status}${msg?" "+msg:""}`);throw new Error(`TfL said ${r.status}${msg?": "+msg:""}`)}
  return r.json();
 }
+// ukTime: shows a time in UK time, whatever time zone the phone is set to.
+// clean: tidies TfL station names, e.g. "Barking Rail Station" becomes "Barking".
+// mins: turns seconds-until-arrival into "Due" or "4 min".
 const ukTime=d=>d.toLocaleTimeString("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit"});
 const clean=s=>String(s||"").replace(/\s+(Underground|Rail|DLR)?\s*Station$/i,"").replace(/\s+\(.*\)$/,"");
 const mins=s=>s<60?"Due":Math.round(s/60)+" min";
 
+/* ---------- Line names and colours ----------
+   COLORS maps each TfL line id to its official colour. Train companies are included so
+   journeys picked under "Elsewhere" still get proper colours; anything missing shows grey. */
 const COLORS={bakerloo:"#B36305",central:"#E32017",circle:"#FFD300",district:"#00782A","hammersmith-city":"#F3A9BB",jubilee:"#A0A5A9",
  metropolitan:"#9B0056",northern:"#2b2b2b",piccadilly:"#003688",victoria:"#0098D4","waterloo-city":"#95CDBA",
  liberty:"#61686B",lioness:"#FFA600",mildmay:"#006FE6",suffragette:"#18A95D",weaver:"#9B0058",windrush:"#DC241F",
@@ -275,22 +361,43 @@ const COLORS={bakerloo:"#B36305",central:"#E32017",circle:"#FFD300",district:"#0
  "greater-anglia":"#D70428",southeastern:"#1E90FF",southern:"#7CB342",thameslink:"#E9438D","south-western-railway":"#24398C",
  "great-western-railway":"#0A493E",chiltern:"#00BFFF","london-northwestern-railway":"#00A650","west-midlands-trains":"#FF8300",
  "avanti-west-coast":"#004354","lner":"#CE0E2D","heathrow-express":"#532E63",bus:"#DC241F"};
+// LINES holds the three lines on the commute, with nicer display names and the page's own colour variables.
 const LINES={c2c:{name:"c2c",color:"var(--c2c)"},district:{name:"District",color:"var(--district)"},suffragette:{name:"Suffragette",color:"var(--suffragette)"}};
+// lname / lcol: get a line's display name and colour by its id, falling back to whatever TfL calls it.
 const lname=id=>LINES[id]?.name||RAW[id]?.name||id;
 const lcol=id=>LINES[id]?.color||COLORS[id]||"var(--muted)";
+// Lines with pale colours get dark text on their pills so the name is readable.
 const LIGHT=new Set(["circle","hammersmith-city","waterloo-city","lioness"]);
 const lsty=id=>`--lc:${lcol(id)}${LIGHT.has(id)?";color:#111":""}`;
+// TfL only publishes live arrival times for these modes, not for train companies like c2c.
 const LIVE_MODES=["tube","overground","elizabeth-line","dlr"];
 
-/* ---------- National Rail station codes (CRS) ---------- */
+/* ---------- National Rail station codes ----------
+   Every GB station has a 3-letter code (CRS), e.g. OCK = Ockendon, WGR = Woodgrange Park, LST = London Liverpool Street. */
+// stations.json is a list of [code, name, latitude, longitude] for every GB station,
+// e.g. ["OCK","Ockendon",51.52,0.29]. It loads in the background; CRSP is the promise for it.
+// If it can't load (for example, opening the file straight from your computer), codes just won't work.
 const CRS=new Map();let CRSLIST=[];
 const CRSP=fetch("stations.json").then(r=>r.ok?r.json():[]).then(a=>{CRSLIST=a;a.forEach(s=>CRS.set(s[0],s))}).catch(()=>{});
 // Accepts "OCK", "ock" or "Ockendon (OCK)"; returns [code,name,lat,lon] or null.
 function crsOf(q){q=String(q||"").trim();const m=q.match(/\(([A-Za-z]{3})\)$/);const code=(m?m[1]:/^[A-Za-z]{3}$/.test(q)?q:"").toUpperCase();return(code&&CRS.get(code))||null}
+// queryOf: what to put in the web address for a typed station ("Ockendon (OCK)" becomes "OCK").
+// labelOf: what to show on screen for a code ("OCK" becomes "Ockendon").
 const queryOf=v=>{const c=crsOf(v);return c?c[0]:String(v||"").trim()};
 const labelOf=q=>{const c=crsOf(q);return c?c[1]:String(q||"").trim()};
 
+/* ---------- The commute ----------
+   COMMUTE_STOPS: words that mean a c2c disruption actually affects this journey.
+   c2c only publishes one status for its whole network, so a problem at Shoeburyness
+   shouldn't make your journey "fucked". See relevance() below. */
 const COMMUTE_STOPS=["ockendon","upminster","grays","chafford","barking","west horndon","tilbury","all c2c"];
+/* TRIPS: the two hand-built commute directions.
+   Each has:
+     legs   – the route in order. "lines" lists which lines can do that leg.
+              either:true means any one of them will do (District OR c2c from Upminster to Barking),
+              so the leg only counts as broken if they're ALL broken.
+     boards – the live departure boards to show. station/dest are patterns that pick out
+              the right station and the right direction from TfL's arrivals list. */
 const TRIPS={
  "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",extra:COMMUTE_STOPS,legs:[
   {from:"Ockendon",to:"Upminster",lines:["c2c"]},
@@ -308,19 +415,30 @@ const TRIPS={
    {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,dest:x=>/upminster/i.test(x)}]}
 };
 // A train company's status covers its whole network, so only count it if it mentions somewhere on this trip.
+// Builds a search pattern from every station on the trip, plus any extra words like COMMUTE_STOPS.
 function relevance(T,legs){
  const words=new Set(["all lines","all routes","whole","entire",...(T.extra||[])]);
  legs.forEach(l=>[l.from,l.to].forEach(n=>{n=clean(n).replace(/^London\s+/i,"").toLowerCase();if(n.length>=4)words.add(n)}));
  return new RegExp([...words].map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
 }
 
+/* ---------- How bad is a line? ----------
+   Every status is boiled down to one of: good, warn (delays), closed (shut for the night),
+   bad (suspended or severe). RANK orders them so the worst can be picked out.
+   "na" means TfL has no status for it (buses, say), and it's ignored for the verdict. */
 const RANK={na:-1,good:0,warn:1,closed:2,bad:3};
+// TfL gives each status a number (statusSeverity). This sorts them into our four levels:
+//   10 Good Service, 18 No Issues, 19 Information .............. good
+//   20 Service Closed, 16 Not Running, 0 Special Service ...... closed
+//   9 Minor Delays, 7 Diverted, 8 Bus Service, 14 Change of Frequency, 17 Issues Reported ... warn
+//   everything else (Suspended, Part Suspended, Severe Delays, Part Closure…) ... bad
 function classify(sev){
  if(sev===10||sev===18||sev===19)return"good";
  if(sev===20||sev===16||sev===0)return"closed";
  if([9,7,8,14,17].includes(sev))return"warn";
  return"bad";
 }
+// Takes one TfL line and returns its worst status, a readable label and the reasons TfL gave.
 function lineState(l){
  const sts=l?.lineStatuses?.length?l.lineStatuses:[{statusSeverity:10,statusSeverityDescription:"Good Service"}];
  const worst=sts.reduce((a,s)=>s.statusSeverity<a.statusSeverity?s:a);
@@ -328,10 +446,13 @@ function lineState(l){
  return{state:classify(worst.statusSeverity),sev:worst.statusSeverity,label:[...new Set(sts.map(s=>s.statusSeverityDescription))].join(", "),reasons};
 }
 
-/* ---------- network status: whole-network calls, one per mode as a fallback ---------- */
-// National Rail is fetched only for c2c, and is listed first.
+/* ---------- Status of every line ----------
+   MODES is the list of groups shown under "Every line right now", in display order.
+   From National Rail only c2c is shown, plus any train company on a journey you've picked. */
 const MODES=[["national-rail","c2c"],["tube","Underground"],["overground","London Overground"],["elizabeth-line","Elizabeth line"],["dlr","DLR"]];
 const isC2c=l=>l.id==="c2c"||/^c2c$/i.test(l.name);
+// Asks TfL for every line's status in one request. If that fails, it tries each group separately
+// so one broken group doesn't take the whole page down. Returns { tube:[…], overground:[…], … }.
 async function loadNetwork(){
  const byMode={};
  try{
@@ -342,17 +463,25 @@ async function loadNetwork(){
  }
  return byMode;
 }
+// Finds a line by id, or by name if TfL ever changes the id (c2c has been known to do this).
 function findLine(byMode,key){
  const all=Object.values(byMode).flat();
  return all.find(l=>l.id===key)||all.find(l=>l.name.toLowerCase()===key)||null;
 }
 
+// stops: station lookups already done, so each check doesn't search for them again.
+// RAW: the full TfL record for every line, used by the popup.
+// journeyDis: the disruption notes from each "Next journeys" card, for its Details popup.
 let stops=null;
 const RAW={};          // line id -> TfL line object, for the details popup
 let journeyDis=[];     // disruption texts per journey card
 
-/* ---------- links inside status text ---------- */
+/* ---------- Clickable links inside TfL's status text ----------
+   TfL and c2c sometimes put bare web addresses in their status messages
+   (e.g. "//www.nationalrail.co.uk/service-disruptions/barking-20261023/").
+   These turn them into tidy links like "National Rail notice ↗" that open in a new tab. */
 const URL_RE=/(?:https?:)?\/\/[^\s<>"')]+|\bwww\.[^\s<>"')]+/gi;
+// Picks a short name for a link based on which website it goes to.
 function linkLabel(u){
  try{const x=new URL(u);const h=x.hostname.replace(/^www\./,"");
   if(/nationalrail/.test(h))return"National Rail notice";
@@ -360,6 +489,7 @@ function linkLabel(u){
   if(/c2c/.test(h))return"c2c notice";
   return h;}catch{return"Link"}
 }
+// Fixes up partial addresses ("//www…" or "www…") so they work as real links.
 function normUrl(u){u=u.replace(/[.,;:]+$/,"");if(u.startsWith("//"))return"https:"+u;if(/^www\./i.test(u))return"https://"+u;return u}
 const linkHtml=u=>{const n=normUrl(u);return `<a class="ext" href="${esc(n)}" target="_blank" rel="noopener noreferrer">${esc(linkLabel(n))} ↗</a>`};
 // Escapes text, shortens the words (never a link), and turns every link into a clickable one.
@@ -377,7 +507,8 @@ function richText(s,max){
  return (text?esc(text):"")+(text&&links?" ":"")+links;
 }
 
-/* ---------- details popup ---------- */
+/* ---------- Details popup ---------- */
+// The "official page" links at the bottom of each popup, depending on the type of line.
 function tflLinks(l){
  const id=l.id,mode=l.modeName,out=[];
  if(mode==="national-rail"||isC2c(l)){out.push(["National Rail disruptions","https://www.nationalrail.co.uk/status-and-disruptions/"]);if(isC2c(l))out.push(["c2c website","https://www.c2c-online.co.uk/"]);return out}
@@ -388,11 +519,15 @@ function tflLinks(l){
  out.push(["All TfL service status","https://tfl.gov.uk/tube-dlr-overground/status/"]);
  return out;
 }
+// Formats a date like "Tue 3 Nov, 20:00" in UK time.
 const fmtDate=s=>{try{return new Date(s).toLocaleString("en-GB",{timeZone:"Europe/London",weekday:"short",day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}catch{return s}};
+// Opens the popup with a title, a colour bar and some content.
 function openPopup(title,color,html){
  $("popTitle").textContent=title;$("pop").style.setProperty("--lc",color||"var(--muted)");$("popBody").innerHTML=html;
  const d=$("pop");if(d.showModal){if(!d.open)d.showModal()}else d.setAttribute("open","");
 }
+// Fills the popup for one line: its status, TfL's full explanation, when it applies,
+// then (if there's a problem) asks TfL for extra detail like which stations are affected.
 async function openLine(key){
  const l=RAW[key];if(!l)return;
  const s=lineState(l);
@@ -417,12 +552,17 @@ async function openLine(key){
    return `<div class="popblock">${x.additionalInfo?`<p>${richText(x.additionalInfo)}</p>`:""}${stopsAff.length?`<p class="when"><b>Stations affected:</b> ${esc(stopsAff.slice(0,30).join(", "))}${stopsAff.length>30?"…":""}</p>`:""}</div>`}).join("");
  }catch{}
 }
+// One click handler for the whole page: anything with data-line="…" opens that line's popup,
+// anything with data-jdis="…" opens the disruption note for that journey card.
 document.addEventListener("click",e=>{
  const b=e.target.closest("[data-line]");if(b){openLine(b.dataset.line);return}
  const j=e.target.closest("[data-jdis]");
  if(j){const list=journeyDis[+j.dataset.jdis]||[];openPopup("Disruption on this journey","var(--warn)",list.map(t=>`<p>${richText(t)}</p>`).join("")+
   `<div class="poplinks"><a class="ext" href="https://tfl.gov.uk/tube-dlr-overground/status/" target="_blank" rel="noopener noreferrer">All TfL service status ↗</a><a class="ext" href="https://www.nationalrail.co.uk/status-and-disruptions/" target="_blank" rel="noopener noreferrer">National Rail disruptions ↗</a></div>`)}
 });
+/* ---------- Finding stations and planning journeys ---------- */
+// Searches TfL for a station by name. Returns its TfL ids (rail station codes first, as they
+// plan best), its coordinates as a backup, and TfL's name for it.
 async function resolveStop(name,modes){
  const r=await get(`/StopPoint/Search/${encodeURIComponent(name)}?modes=${modes}&maxResults=8`);
  const ms=(r.matches||[]).filter(x=>x.name.toLowerCase().startsWith(name.toLowerCase()));
@@ -442,6 +582,9 @@ async function resolveQuery(q){
  }catch(e){if(!out.coord)throw new Error(`Couldn't find a station called “${q}”`)}
  return out;
 }
+// Asks TfL's journey planner for routes. TfL can be fussy, so it tries a few combinations:
+// different station ids for each end, then plain coordinates, first limited to trains and Tube
+// (no buses), then with no limits at all. The first one that works wins.
 async function planJourney(trip){
  if(!stops)stops={};
  for(const n of [trip.fromQ,trip.toQ])if(!stops[n])stops[n]=await resolveQuery(n);
@@ -461,16 +604,21 @@ async function planJourney(trip){
 
 // Before 13:00 UK time you're heading to Woodgrange Park; from 13:00 you're heading home to Ockendon.
 // A tapped tab (or a #to-… bookmark) overrides that until you tap the automatic direction again.
+// Returns which commute direction to show right now, based on the UK hour.
 function autoKey(){const h=+new Date().toLocaleString("en-GB",{timeZone:"Europe/London",hour:"2-digit",hour12:false});return h<13?"to-woodgrange":"to-ockendon"}
 // "#go/<from>/<to>" is any journey; each end is a station name, a 3-letter code or a TfL stop id.
 function parseCustom(){const m=location.hash.match(/^#go\/([^/]+)\/([^/]+)$/);if(!m)return null;try{return[decodeURIComponent(m[1]),decodeURIComponent(m[2])]}catch{return null}}
 const goHash=(f,t)=>`#go/${encodeURIComponent(f)}/${encodeURIComponent(t)}`;
+// tripKey: which journey is showing: "custom", "to-woodgrange" or "to-ockendon".
+// trip: the full details for it. fromQ/toQ are what gets sent to TfL; from/to are what's displayed.
 function tripKey(){if(parseCustom())return"custom";const h=location.hash.slice(1);return TRIPS[h]?h:autoKey()}
 function trip(){
  const c=parseCustom();
  if(c)return{custom:true,fromQ:c[0],toQ:c[1],from:labelOf(c[0]),to:labelOf(c[1])};
  const t=TRIPS[tripKey()];return{...t,fromQ:t.from,toQ:t.to};
 }
+// Removes the #… from the address without reloading, which puts the page back on automatic.
+// Tapping the tab that matches the time of day does this, as does "Back to my commute".
 const clearHash=()=>history.replaceState(null,"",location.pathname+location.search);
 for(const a of [$("dirOut"),$("dirBack")])a.addEventListener("click",e=>{
  if(a.getAttribute("href").slice(1)===autoKey()){e.preventDefault();clearHash();check()}
@@ -478,6 +626,9 @@ for(const a of [$("dirOut"),$("dirBack")])a.addEventListener("click",e=>{
 $("dirNote").addEventListener("click",e=>{if(e.target.id==="backAuto"){e.preventDefault();clearHash();check()}});
 
 // Builds route legs from TfL's first suggested journey; alternative lines on one leg count as "either".
+// For "Elsewhere" journeys there's no hand-built route, so this turns TfL's first suggested
+// journey into legs. Walking is skipped. If TfL offers more than one line for a leg
+// (e.g. District or Hammersmith & City), it becomes an "either" leg like on the commute.
 function legsFromJourney(j){
  if(!j)return[];
  return(j.legs||[]).filter(l=>l.mode?.id!=="walking"&&l.mode?.id!=="cycle").map(l=>{
@@ -488,6 +639,9 @@ function legsFromJourney(j){
  });
 }
 
+/* ---------- The main check ----------
+   Runs on load, every minute, and on any journey change. running stops two checks overlapping.
+   currentLines remembers which lines are on the current journey, for the "Every line" list. */
 let running=false,currentLines=new Set();
 async function check(){
  if(running)return;running=true;failures.length=0;
@@ -536,7 +690,12 @@ async function check(){
  running=false;
 }
 
-/* ---------- verdict wording: a pool per level, rotated each check ---------- */
+/* ---------- The verdict: wording and cartoons ---------- */
+// SAY: for each level, a list of giant words (big) and a list of funny lines (sub).
+// {line}, {from} and {to} get swapped for the broken line and where it's broken.
+// Levels: yes = something's broken, none = TfL found no route at all, bit = delays,
+// no = all fine, closed = shut for the night, dunno = TfL isn't answering.
+// To add a line, just add another "…" to the right list.
 const SAY={
  yes:{big:["Yes","Fucked","Yep","Totally","Utterly","Royally","Oh yes"],sub:[
   "Totally fucked. {line} is buggered between {from} and {to}.",
@@ -588,10 +747,13 @@ const SAY={
   "No signal from TfL. Fucked or fine, nobody knows."]}
 };
 // Original animated scenes for each level, drawn here so nothing can fail to load.
+// TRAIN draws a little c2c-coloured train at position x,y. TRACK draws rails with moving sleepers.
 const TRAIN=(x,y,extra="")=>`<g transform="translate(${x} ${y})" ${extra}><rect x="0" y="0" width="96" height="34" rx="8" fill="var(--c2c)"/><rect x="0" y="0" width="96" height="34" rx="8" fill="none" stroke="var(--fg)" stroke-width="2.5"/>
  <rect x="10" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="32" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="54" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><path d="M78 7h8a4 4 0 0 1 4 4v8h-12z" fill="var(--panel)"/>
  <circle cx="20" cy="38" r="6" fill="var(--fg)"/><circle cx="76" cy="38" r="6" fill="var(--fg)"/></g>`;
 const TRACK=y=>`<line x1="0" y1="${y}" x2="360" y2="${y}" stroke="var(--fg)" stroke-width="3"/><line class="sleepers" x1="0" y1="${y+6}" x2="360" y2="${y+6}" stroke="var(--muted)" stroke-width="5" stroke-dasharray="4 14"/>`;
+// SCENES: the cartoons for each level. Each is a function that returns SVG drawing code.
+// The class names (bob, crawl, flame, tumble…) link to the animations in the CSS.
 const SCENES={
  no:[
   ()=>`${TRACK(112)}<g class="bob">${TRAIN(130,68)}</g><circle class="puff p1" cx="210" cy="60" r="7" fill="var(--muted)"/><circle class="puff p2" cx="210" cy="60" r="9" fill="var(--muted)"/><circle class="puff p3" cx="210" cy="60" r="6" fill="var(--muted)"/>`,
@@ -609,8 +771,11 @@ const SCENES={
  dunno:[
   ()=>`${TRACK(112)}${TRAIN(130,68)}<text class="huh" x="178" y="56" text-anchor="middle">?</text>`]
 };
+// pickFrom chooses a random item but never the same one twice in a row.
 let lastPick={};
 function pickFrom(arr,key){if(arr.length<2)return arr[0];let i;do{i=Math.floor(Math.random()*arr.length)}while(i===lastPick[key]);lastPick[key]=i;return arr[i]}
+// speak() shows the verdict. It's separate from renderVerdict() so "Say it another way"
+// can pick new words without asking TfL again.
 let verdictCtx=null;
 function speak(){
  if(!verdictCtx)return;
@@ -623,6 +788,13 @@ function speak(){
  $("sub").textContent=sub;
  $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")()}</svg>`;
 }
+// Decides the overall level, checking in this order:
+//   dunno  – TfL isn't answering, or a picked journey couldn't be planned
+//   closed – something's shut for the night and nothing's actually broken
+//   yes    – any leg is broken (for "either" legs, all its lines must be broken)
+//   none   – TfL found no way to get there
+//   bit    – any leg has delays
+//   no     – all good
 function renderVerdict(T,legs,journeys,noStatus,jErr){
  const names=l=>l.per.filter(p=>p.state===l.state).map(p=>lname(p.id)).join(" and ");
  const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
@@ -636,6 +808,8 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
  verdictCtx={level,ctx};speak();
 }
 
+/* ---------- Drawing each section ---------- */
+// Draws "Your route": a stop, then the leg's line pills, its status, and the reason if it's not fine.
 function renderRoute(T,legs,jErr){
  const word={good:"Running fine",warn:"Delays",bad:"Fucked",closed:"Closed",na:"No live status"};
  if(!legs.length){$("route").innerHTML=`<p class="${jErr?"err":"empty"}" style="padding:10px 0">${jErr?`TfL couldn't plan this journey: ${esc(jErr.message)}`:"No route found right now."}</p>`;return}
@@ -658,6 +832,7 @@ function renderRoute(T,legs,jErr){
  $("route").innerHTML=html;
 }
 
+// Draws the next five journeys: leave time, which lines, arrival time, and any disruption note.
 function renderJourneys(js,err){
  if(err){$("journeys").innerHTML=`<p class="err">Couldn't get journeys: ${esc(err.message)}</p>`;return}
  if(!js.length){$("journeys").innerHTML=`<p class="empty">No journeys found right now.</p>`;return}
@@ -677,6 +852,9 @@ function renderJourneys(js,err){
    ${dis.length?`<p class="note">${richText([...new Set(dis)][0],140)} <button type="button" class="morebtn" data-jdis="${journeyDis.push([...new Set(dis)])-1}">Details ›</button></p>`:""}</div>`}).join("");
 }
 
+// Draws the live departure boards. For the commute it uses the hand-picked boards in TRIPS.
+// For other journeys it makes one per Tube/Overground/Elizabeth line/DLR leg, and tries to show only
+// trains going your way. If it can't tell the direction, it shows both and says so.
 async function loadLive(T,legs){
  // Your commute uses hand-tuned boards; any other journey gets one board per Tube, Overground, Elizabeth line or DLR leg.
  const boards=T.custom
@@ -705,6 +883,7 @@ async function loadLive(T,legs){
  }));
 }
 
+// Draws "Every line right now": a summary count, then each group with problem lines first.
 function renderNetwork(byMode){
  // From National Rail, show c2c plus any train company on the journey you're checking.
  const pick=m=>(byMode[m]||[]).filter(l=>m!=="national-rail"||isC2c(l)||currentLines.has(l.id));
@@ -727,8 +906,11 @@ function renderNetwork(byMode){
   (n.bad?`<span class="chip bad">${n.bad} severe or suspended</span>`:"")+(n.closed?`<span class="chip closed">${n.closed} closed</span>`:"");
 }
 
-/* ---------- journey picker ---------- */
+/* ---------- The "Elsewhere" journey picker ----------
+   store: a safe wrapper for the browser's local storage (used for recent journeys).
+   If storage is blocked, for example in a private window, it quietly does nothing. */
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+// Shows or hides the picker. When opening on a picked journey, it fills in the current stations.
 function showPicker(open){
  $("picker").hidden=!open;$("dirOther").setAttribute("aria-expanded",open);
  if(!open)return;
@@ -737,10 +919,14 @@ function showPicker(open){
  renderRecent();$("pkHint").classList.remove("err");
  (c?$("pkTo"):$("pkFrom")).focus();
 }
+// How a station appears in the input box: "Ockendon (OCK)" for a code, otherwise as typed.
 const fieldText=q=>{const c=crsOf(q);return c?`${c[1]} (${c[0]})`:q};
 $("dirOther").addEventListener("click",e=>{e.preventDefault();showPicker($("picker").hidden)});
 $("pkSwap").onclick=()=>{const a=$("pkFrom").value;$("pkFrom").value=$("pkTo").value;$("pkTo").value=a};
 
+// Station suggestions while typing. National Rail matches come instantly from stations.json.
+// After a short pause it also asks TfL, so Tube-only stations like Bank appear too.
+// sugCtl cancels an older TfL search if you keep typing.
 let sugTimer,sugCtl;
 function suggest(inp){
  clearTimeout(sugTimer);sugCtl?.abort();
@@ -769,10 +955,13 @@ function suggest(inp){
 }
 for(const id of ["pkFrom","pkTo"])$(id).addEventListener("input",e=>suggest(e.target));
 
+// Shows your last six journeys as one-tap shortcuts.
 function renderRecent(){
  const r=store.get("jf-recent",[]);
  $("recent").innerHTML=r.length?`<span>Recent:</span>`+r.map(([f,t])=>`<a href="${esc(goHash(f,t))}">${esc(labelOf(f))} → ${esc(labelOf(t))}</a>`).join(""):"";
 }
+// When you press "Is it fucked?": check both boxes, save to recent, and switch to that journey
+// by changing the address to #go/FROM/TO (which also makes it bookmarkable).
 $("picker").addEventListener("submit",e=>{
  e.preventDefault();
  const f=queryOf($("pkFrom").value),t=queryOf($("pkTo").value);
@@ -786,6 +975,9 @@ $("picker").addEventListener("submit",e=>{
 });
 addEventListener("hashchange",()=>showPicker(false));
 
+/* ---------- Start-up and refreshing ----------
+   Check again now, reroll the wording, re-check when the address changes (switching journey),
+   every 60 seconds while the page is visible, and straight away when you come back to the tab. */
 $("refresh").onclick=check;
 $("reroll").onclick=speak;
 $("answer").onclick=speak;
