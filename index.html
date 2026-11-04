@@ -473,6 +473,60 @@ function classify(sev){
  if([0,7,9,14,15,17].includes(sev))return"warn";
  return"bad";
 }
+/* ---------- Which part of a line is affected? ----------
+   TfL often gives a line two statuses at once, e.g. the District today:
+   "Severe delays between Barking and Upminster and between Earl's Court and Wimbledon
+    and MINOR DELAYS on the rest of the line". TfL doesn't say which stations each covers,
+   so the page reads the "between X and Y" bits and checks them against the line's station
+   order (from TfL's route sequences). A section only counts against a leg if the leg actually
+   travels along it; just touching one end (starting at Barking, say) doesn't count. */
+const SEQ={};   // line id -> list of routes, each a list of station names in order (null if unavailable)
+const norm=n=>clean(n).toLowerCase().replace(/[’`]/g,"'").replace(/\s+/g," ").trim();
+async function loadSequences(ids){
+ await Promise.all(ids.filter(id=>!(id in SEQ)).map(async id=>{
+  try{
+   const r=await get(`/Line/${encodeURIComponent(id)}/Route/Sequence/all`);
+   const names={};
+   (r.stopPointSequences||[]).forEach(sq=>(sq.stopPoint||[]).forEach(p=>{names[p.id]=norm(p.name);if(p.stationId)names[p.stationId]=norm(p.name)}));
+   SEQ[id]=(r.orderedLineRoutes||[]).map(o=>(o.naptanIds||[]).map(n=>names[n]).filter(Boolean)).filter(r=>r.length);
+  }catch{SEQ[id]=null}
+ }));
+}
+// Pulls every "between X and Y" out of a status message.
+function sections(text){
+ const out=[],re=/between\s+(.+?)\s+and\s+(.+?)(?=\s+and\s+between\b|\s+and\s+[A-Z]{4,}|\s+(?:due|while|until|because|on|in|for|from|with|towards|via)\b|[.,;:(]|$)/g;
+ let m;while((m=re.exec(text)))out.push([norm(m[1]),norm(m[2])]);
+ return out;
+}
+const stopIndex=(route,name)=>{let i=route.indexOf(name);if(i<0)i=route.findIndex(r=>r.startsWith(name+" ")||name.startsWith(r+" "));return i};
+// true = the message's sections cover this leg; false = they're elsewhere; null = can't tell.
+function sectionHitsLeg(lineId,text,leg){
+ const secs=sections(text),routes=SEQ[lineId];
+ if(!secs.length||!routes)return null;
+ const [lf,lt]=[leg.from,leg.to].map(norm);
+ let known=false;
+ for(const [a,b] of secs)for(const r of routes){
+  const ia=stopIndex(r,a),ib=stopIndex(r,b),la=stopIndex(r,lf),lb=stopIndex(r,lt);
+  if(ia<0||ib<0||la<0||lb<0)continue;
+  known=true;
+  const s0=Math.min(ia,ib),s1=Math.max(ia,ib),l0=Math.min(la,lb),l1=Math.max(la,lb);
+  if(l1>s0&&l0<s1)return true;
+ }
+ return known?false:null;
+}
+// A TfL line's status for one particular leg: statuses whose sections are clearly elsewhere are
+// dropped. When a message says "...on the rest of the line", the milder status covers everywhere else.
+function lineStateFor(l,leg){
+ const sts=l?.lineStatuses||[];
+ const rest=sts.length>1&&sts.some(s=>/rest of the line/i.test(s.reason||""))?Math.max(...sts.map(s=>s.statusSeverity)):null;
+ const kept=sts.filter(s=>classify(s.statusSeverity)==="good"||s.statusSeverity===rest||sectionHitsLeg(l.id,s.reason||"",leg)!==false);
+ if(!sts.length||kept.length===sts.length)return lineState(l);
+ const st=lineState({...l,lineStatuses:kept.length?kept:[{statusSeverity:10,statusSeverityDescription:"Good Service"}]});
+ st.elsewhere=sts.filter(s=>!kept.includes(s)).map(s=>s.statusSeverityDescription);
+ if(!st.reasons.length)st.reasons=lineState(l).reasons;
+ return st;
+}
+
 // Takes one TfL line and returns its worst status, a readable label and the reasons TfL gave.
 function lineState(l){
  const sts=l?.lineStatuses?.length?l.lineStatuses:[{statusSeverity:10,statusSeverityDescription:"Good Service"}];
@@ -670,7 +724,7 @@ function legsFromJourney(j){
   const ids=[...new Set((l.routeOptions||[]).map(o=>o.lineIdentifier?.id).filter(Boolean))];
   return{from:clean(l.departurePoint?.commonName),to:clean(l.arrivalPoint?.commonName),
    lines:ids.length?ids:[l.mode?.id||"unknown"],either:ids.length>1,mode:l.mode?.id,
-   stops:(l.path?.stopPoints||[]).map(p=>clean(p.name)),
+   stops:(l.path?.stopPoints||[]).map(p=>clean(p.name)),toNaptan:l.arrivalPoint?.naptanId,
    naptan:l.departurePoint?.naptanId,dirs:[...new Set((l.routeOptions||[]).flatMap(o=>o.directions||[]).map(d=>clean(d).toLowerCase()).filter(Boolean))]};
  });
 }
@@ -700,11 +754,14 @@ async function check(){
  const statusOk=Object.values(byMode).flat().length>0;
  const js=jr.j||[];
  const tLegs=T.custom?legsFromJourney(js[0]):T.legs;
+ // Station orders for any TfL line on this trip whose problem is only "between" certain stations.
+ await loadSequences([...new Set(tLegs.flatMap(l=>l.lines))].filter(id=>RAW[id]&&RAW[id].modeName!=="national-rail"&&
+  (RAW[id].lineStatuses||[]).some(s=>classify(s.statusSeverity)!=="good"&&/between/i.test(s.reason||""))));
  // How one line is doing on one leg.
  const st=(id,leg)=>{
   const l=statusOk&&RAW[id];
   if(!l)return{state:"na",label:id==="bus"||id==="unknown"?"No live status":"Status unknown",reasons:[]};
-  const s=lineState(l);
+  const s=l.modeName==="national-rail"?lineState(l):lineStateFor(l,leg);
   if(l.modeName==="national-rail"&&(s.state==="bad"||s.state==="warn")){
    // A train company's problem that doesn't mention this leg is somewhere else on its network.
    if(s.reasons.length&&!s.reasons.some(r=>affects(leg,r))){s.state="good";s.offRoute=true}
@@ -855,9 +912,9 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
   const j=journeys.find(j=>!(j.legs||[]).some(l=>(l.routeOptions||[]).some(o=>broken.has(o.lineIdentifier?.id))));
   if(j){
    const hm=x=>String(x||"").slice(11,16);
-   const via=[...new Set((j.legs||[]).filter(l=>l.mode?.id!=="walking").map(l=>{const id=l.routeOptions?.[0]?.lineIdentifier?.id;return l.mode?.id==="bus"?`bus ${l.routeOptions?.[0]?.name||""}`.trim():(id?lname(id):l.routeOptions?.[0]?.name||l.mode?.name)}))];
+   const via=[...new Set((j.legs||[]).filter(l=>l.mode?.id!=="walking").map(l=>{const id=l.routeOptions?.[0]?.lineIdentifier?.id;return l.mode?.id==="bus"?`bus ${l.routeOptions?.[0]?.name||""}`.trim():(id&&(LINES[id]?.name||RAW[id]?.name))||l.routeOptions?.[0]?.name||l.mode?.name}))];
    const walk=(j.legs||[]).filter(l=>l.mode?.id==="walking"&&l.duration>4).map(l=>l.duration);
-   alt=`Plan B: leave ${hm(j.startDateTime)}, arrive ${hm(j.arrivalDateTime)} on the ${via.join(", then ")}${walk.length?`, with a ${Math.max(...walk)}-minute walk`:""}.`;
+   alt=`Plan B: leave ${hm(j.startDateTime)}, arrive ${hm(j.arrivalDateTime)} on the ${via.join(", then ")}${walk.length?`, with ${/^(8|11|18)$|^8\d$/.test(String(Math.max(...walk)))?"an":"a"} ${Math.max(...walk)}-minute walk`:""}.`;
   }
  }
  verdictCtx={level,ctx,alt};speak();
@@ -872,10 +929,12 @@ function renderRoute(T,legs,jErr){
  legs.forEach((leg,i)=>{
   html+=`<div class="stop"><i></i>${esc(leg.from)}</div>`;
   const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
-  const why=leg.per.filter(p=>(p.state!=="good"&&p.state!=="na")||p.offRoute).map(p=>{
+  const why=leg.per.filter(p=>(p.state!=="good"&&p.state!=="na")||p.offRoute||p.elsewhere).map(p=>{
    const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
+   const away=p.elsewhere?p.elsewhere.map(x=>x.toLowerCase()).join(" and "):"";
    const note=p.offRoute?` (that's elsewhere on ${esc(lname(p.id))}, not between ${esc(leg.from)} and ${esc(leg.to)})`
-    :p.running?` TfL's journey planner still has trains on this bit, so they look to be running.`:"";
+    :p.running?` TfL's journey planner still has trains on this bit, so they look to be running.`
+    :p.elsewhere?` (the ${esc(away)} ${p.elsewhere.length>1||/s$/i.test(away)?"are":"is"} on another part of the line, not between ${esc(leg.from)} and ${esc(leg.to)})`:"";
    return `<p class="why"><b>${esc(lname(p.id))}:</b> ${richText(r,200)}${note} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
   const pill=p=>RAW[p.id]
    ?`<button type="button" class="pill pillbtn" data-line="${esc(p.id)}" style="${lsty(p.id)}" aria-label="${esc(lname(p.id))} status details">${esc(lname(p.id))} ›</button>`
@@ -915,7 +974,7 @@ function renderJourneys(js,err){
 async function loadLive(T,legs){
  // Your commute uses hand-tuned boards; any other journey gets one board per Tube, Overground, Elizabeth line or DLR leg.
  const boards=T.custom
-  ?legs.filter(l=>LIVE_MODES.includes(l.mode)&&l.naptan).slice(0,3).map(l=>({line:l.lines[0],lines:l.lines,title:`${l.from} to ${l.to}`,naptan:l.naptan,dirs:l.dirs}))
+  ?legs.filter(l=>LIVE_MODES.includes(l.mode)&&l.naptan).slice(0,3).map(l=>({line:l.lines[0],lines:l.lines,title:`${l.from} to ${l.to}`,naptan:l.naptan,toNaptan:l.toNaptan,dirs:l.dirs}))
   :T.boards;
  // TfL has no live times for train companies like c2c, so for those legs link to National Rail's
  // live departure board instead. It's the same feed c2c's own website and station screens use.
@@ -935,9 +994,14 @@ async function loadLive(T,legs){
   try{
    let rows,mixed=false;
    if(b.naptan){
-    const a=(await get(`/StopPoint/${encodeURIComponent(b.naptan)}/Arrivals`)).filter(x=>b.lines.includes(x.lineId));
+    // Best test of direction: the same train (vehicleId) shows up later at the stop you're going to.
+    const [a0,z0]=await Promise.all([get(`/StopPoint/${encodeURIComponent(b.naptan)}/Arrivals`),
+     b.toNaptan?get(`/StopPoint/${encodeURIComponent(b.toNaptan)}/Arrivals`).catch(()=>[]):[]]);
+    const a=a0.filter(x=>b.lines.includes(x.lineId));
+    const later=new Map(z0.filter(x=>b.lines.includes(x.lineId)&&x.vehicleId).map(x=>[x.vehicleId,x.timeToStation]));
+    const sameTrain=a.filter(x=>x.vehicleId&&later.has(x.vehicleId)&&later.get(x.vehicleId)>x.timeToStation);
     const dest=x=>clean(x.destinationName||x.towards||"").toLowerCase();
-    const mine=b.dirs.length?a.filter(x=>b.dirs.includes(dest(x))||b.dirs.some(d=>(x.towards||"").toLowerCase().includes(d))):[];
+    const mine=sameTrain.length?sameTrain:b.dirs.length?a.filter(x=>b.dirs.includes(dest(x))||b.dirs.some(d=>(x.towards||"").toLowerCase().includes(d))):[];
     rows=mine.length?mine:a;mixed=!mine.length&&a.length>0;
    }else{
     const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
