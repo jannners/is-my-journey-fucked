@@ -70,6 +70,12 @@ const brief = l => l ? { id: l.id, name: l.name, statuses: (l.lineStatuses || []
 const lines = [...(Array.isArray(raw.status) ? raw.status.map(brief) : []), brief(c2c)].filter(Boolean);
 
 fs.writeFileSync(path.join(OUT, "summary.json"), JSON.stringify({ checkedAt: ukNow(), lines, results }, null, 2));
+// Full, untrimmed TfL records (including which stops each disruption covers), for debugging.
+fs.writeFileSync(path.join(OUT, "raw-lines.json"), JSON.stringify({ checkedAt: ukNow(), status: raw.status, c2c }, null, 2));
+try {
+  const seq = await (await fetch("https://api.tfl.gov.uk/Line/district/Route/Sequence/all")).json();
+  fs.writeFileSync(path.join(OUT, "raw-district-sequence.json"), JSON.stringify(seq.orderedLineRoutes || seq, null, 2));
+} catch {}
 const md = [`# Live check, ${ukNow()} (UK time)`, "", "## What TfL says", "",
   ...lines.map(l => `- **${l.name}** (\`${l.id}\`): ` + l.statuses.map(s => `${s.description} [${s.severity}]${s.reason ? " — " + s.reason.replace(/\s+/g, " ") : ""}`).join("; ")),
   "", "## What the page says", "",
