@@ -43,7 +43,7 @@
   --c2c:#B7007C; --district:#00782A; --suffragette:#18A95D;
   --verdict:var(--fg);
   --sun:#f2b705; --moon:#e8d9a0; --leaf:#6b8f2a; --leaf2:#c4741c; --shell:#b98a4e;
-  --flame1:#ff6a13; --flame2:#ffc21a; --weed:#a3814f; --board:#14161b; --amber:#ffb000;
+  --flame1:#ff6a13; --flame2:#ffc21a; --fox:#e2741f; --snow:#9db4cc; --board:#14161b; --amber:#ffb000;
   --font-display:"Anton","Impact","Haettenschweiler","Arial Narrow Bold",sans-serif;
   --font-body:"Overpass",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:"Red Hat Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -52,7 +52,7 @@
 /* Dark mode: the phone or computer's dark setting swaps in these colours automatically. */
 @media (prefers-color-scheme:dark){:root{
   --bg:#111214; --panel:#1a1b1f; --fg:#ededee; --muted:#9a9ea8; --line:#2a2c32;
-  --good:#3fcf7e; --warn:#ffa630; --bad:#ff4d5a; --closed:#8a93a3; color-scheme:dark}}
+  --good:#3fcf7e; --warn:#ffa630; --bad:#ff4d5a; --closed:#8a93a3; --snow:#e6eef6; --board:#2a2f3a; color-scheme:dark}}
 /* ---------- Page basics ---------- */
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -89,6 +89,13 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .recent{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
 .recent a{font-weight:700;color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;text-decoration:none}
 .na{color:var(--muted)}
+/* National Rail live times and the key form. */
+.nrform{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;margin-top:12px}
+.nrform label{display:grid;gap:4px;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.nrform input{font:600 1rem var(--font-mono);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%;min-width:0}
+.livetag{font-size:.7rem;font-weight:800;color:var(--good);border:1px solid var(--good);border-radius:999px;padding:1px 7px;margin-left:auto}
+.board .row .why{display:block;margin:2px 0 0;font-size:.78rem}
+.livenote{color:var(--fg)}
 
 /* ---------- The verdict: the giant YES / NO / A BIT ---------- */
 .q{font:600 .95rem var(--font-body);text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:0 0 4px}
@@ -103,7 +110,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .verdict{display:grid;justify-items:start}
 .answer{cursor:pointer}
 /* ---------- Animated cartoon scenes under the verdict ---------- */
-.scene{width:100%;max-width:380px;margin-top:14px}
+/* overflow:hidden keeps moving bits (the bus, a runaway wheel) inside the scene's box. */
+.scene{width:100%;max-width:380px;margin-top:14px;overflow:hidden}
 .scene svg{width:100%;height:auto;display:block;overflow:visible}
 /* "Plan B" line under the verdict, when TfL has a way round the broken bit. */
 .alt{margin:10px 0 0;padding:8px 12px;border-left:4px solid var(--good);background:var(--panel);font-weight:700;max-width:46ch}
@@ -112,6 +120,12 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 .sign.red{fill:#ff4d4d}
 .huh{font:400 54px var(--font-display);fill:var(--fg)}
 .zzz{font:700 16px var(--font-mono);fill:var(--muted)}
+.sign.tiny{font-size:8px}
+.sign.green{fill:#3fcf7e}
+.cap{font:700 11px var(--font-mono);fill:var(--fg);letter-spacing:.08em}
+.boing{font:400 22px var(--font-display);fill:var(--bad);letter-spacing:.02em}
+.note{font:700 18px var(--font-body);fill:var(--fg)}
+.ball8{font:700 6.5px var(--font-mono);fill:#fff;letter-spacing:.04em}
 /* All the animations live inside this block, so anyone who has turned on "reduce motion"
    on their device gets still pictures instead. Each class matches a bit of a scene in SCENES (in the script). */
 @media (prefers-reduced-motion:no-preference){
@@ -139,8 +153,52 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
  @keyframes flick{from{transform:scaleY(.8) scaleX(1.05)}to{transform:scaleY(1.15) scaleX(.92)}}
  .smoke{animation:smoke 3s ease-out infinite;transform-box:fill-box;transform-origin:center}
  @keyframes smoke{from{transform:translate(0,0) scale(.5);opacity:.7}to{transform:translate(20px,-60px) scale(1.6);opacity:0}}
- .tumble{animation:tumble 4s linear infinite}
- @keyframes tumble{0%{transform:translate(-30px,94px) rotate(0)}25%{transform:translate(70px,80px) rotate(200deg)}50%{transform:translate(170px,94px) rotate(400deg)}75%{transform:translate(270px,82px) rotate(600deg)}100%{transform:translate(390px,94px) rotate(800deg)}}
+ /* Wheel's come off: the wheel bounces away and a guard chases it. */
+ .wheelaway{animation:wheelaway 3.6s cubic-bezier(.3,.6,.6,1) infinite}
+ @keyframes wheelaway{0%{transform:translate(194px,103px)}18%{transform:translate(232px,64px)}36%{transform:translate(266px,103px)}52%{transform:translate(292px,80px)}68%{transform:translate(318px,103px)}82%{transform:translate(340px,92px)}100%{transform:translate(400px,103px)}}
+ .wheelspin{animation:spin .5s linear infinite;transform-box:fill-box;transform-origin:center}
+ .chase{animation:chase 3.6s linear infinite}
+ @keyframes chase{from{transform:translateX(200px)}to{transform:translateX(370px)}}
+ .lg1,.lg2{animation:leg .2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
+ .lg2{animation-direction:alternate-reverse}
+ @keyframes leg{from{transform:rotate(-30deg)}to{transform:rotate(30deg)}}
+ .flail{animation:leg .16s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
+ .boing{opacity:0;animation:boing 3.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ @keyframes boing{0%,12%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.3)}30%{opacity:1;transform:scale(1)}48%,100%{opacity:0}}
+ /* Rail replacement bus: juddering slowly across. */
+ .busgo{animation:busgo 11s linear infinite}
+ @keyframes busgo{from{transform:translateX(-170px)}to{transform:translateX(380px)}}
+ .judder{animation:judder .24s steps(2) infinite}
+ @keyframes judder{50%{transform:translate(1px,-2px) rotate(-1deg)}}
+ /* Platform people fidgeting, foot-tapping, and clocks. */
+ .fidget{animation:fidget .45s ease-in-out infinite alternate}
+ .fidget:nth-of-type(2n){animation-delay:-.2s}
+ @keyframes fidget{to{transform:translateY(-3px)}}
+ .tap{animation:tap .3s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
+ @keyframes tap{to{transform:rotate(-24deg)}}
+ .hand.fast{animation:spin 1.2s linear infinite}
+ .hand.slow{animation:spin 9s linear infinite}
+ /* Signal failure: sparks and a spanner. */
+ .spark{animation:spark .5s steps(2) infinite}
+ @keyframes spark{50%{opacity:0}}
+ .swing{animation:swing .45s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:right bottom}
+ @keyframes swing{from{transform:rotate(25deg)}to{transform:rotate(-30deg)}}
+ /* Coffee steam, snow, music notes, dancing. */
+ .steam{animation:steam 2s ease-out infinite}
+ @keyframes steam{from{opacity:.9;transform:translateY(0)}to{opacity:0;transform:translateY(-12px)}}
+ .snowf{animation:snowf 3.2s linear infinite}
+ @keyframes snowf{from{transform:translate(0,-30px)}to{transform:translate(-16px,120px)}}
+ .note{animation:note 2.4s ease-out infinite}
+ @keyframes note{from{opacity:0;transform:translate(0,0)}25%{opacity:1}to{opacity:0;transform:translate(16px,-42px)}}
+ .dance{animation:dance .42s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
+ @keyframes dance{from{transform:rotate(-9deg)}to{transform:rotate(9deg) translateY(-7px)}}
+ /* Fox in the bin, and the Magic 8-Ball. */
+ .peek{animation:peek 3.2s ease-in-out infinite}
+ @keyframes peek{0%,18%,86%,100%{transform:translateY(26px)}34%,72%{transform:translateY(0)}}
+ .lid{animation:lid 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:left bottom}
+ @keyframes lid{0%,18%,86%,100%{transform:rotate(0)}34%,72%{transform:rotate(-40deg)}}
+ .shake{animation:shake 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+ @keyframes shake{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(-14deg) translateX(-6px)}20%{transform:rotate(12deg) translateX(6px)}30%{transform:rotate(-8deg)}40%{transform:rotate(5deg)}}
  .blink{animation:blink 1s steps(2) infinite}
  @keyframes blink{to{opacity:.2}}
  .twinkle{animation:blink 1.6s ease-in-out infinite}
@@ -151,7 +209,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
  @keyframes huh{to{transform:translateY(-8px) rotate(8deg)}}
 }
 /* With reduced motion, park the moving things somewhere sensible in the middle of the scene. */
-@media (prefers-reduced-motion:reduce){.tumble{transform:translate(170px,94px)}.snail{transform:translate(200px,128px)}.crawl{transform:translateX(230px)}.cross{transform:translateX(130px)}}
+@media (prefers-reduced-motion:reduce){.wheelaway{transform:translate(266px,103px)}.chase{transform:translateX(250px)}.busgo{transform:translateX(100px)}.peek{transform:translateY(0)}.lid{transform:rotate(-40deg)}.snail{transform:translate(200px,128px)}.crawl{transform:translateX(230px)}.cross{transform:translateX(130px)}}
 
 /* ---------- Section headings ---------- */
 h2{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
@@ -295,8 +353,14 @@ footer{color:var(--muted);font-size:.78rem}
 
   <!-- LIVE TRAINS: real-time arrivals at the stations where you change. Filled by loadLive(). -->
   <section>
-    <h2>Live trains for your changes</h2>
+    <h2>Live departures</h2>
     <div class="live" id="live"></div>
+    <!-- National Rail key form: hidden until someone taps "Add a free National Rail key". -->
+    <form class="nrform" id="nrForm" hidden autocomplete="off">
+      <label for="nrKeyInput">National Rail key<input id="nrKeyInput" type="password" placeholder="Paste your Consumer key"></label>
+      <div class="pk-actions"><button type="submit" class="go">Save key</button><button type="button" id="nrRemove">Remove key</button><button type="button" id="nrCancel">Cancel</button></div>
+      <p class="pk-hint">It's free: sign up at <a class="ext" href="https://raildata.org.uk/" target="_blank" rel="noopener noreferrer">Rail Data Marketplace ↗</a>, subscribe to the "Live Departure Board" data product, then copy its Consumer key. The key is saved only in this browser and never goes into the site's code.</p>
+    </form>
   </section>
 
   <!-- EVERY LINE: status for c2c, the Underground, Overground, Elizabeth line and DLR. Filled by renderNetwork(). -->
@@ -315,7 +379,7 @@ footer{color:var(--muted);font-size:.78rem}
   <!-- Only appears if a TfL request failed, listing which ones. Handy when something breaks. -->
   <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
 
-  <footer>Line status, journeys and live Tube, Overground, Elizabeth line and DLR times from TfL Open Data. National Rail times are timetabled, since TfL doesn't publish live times for train companies. Station codes from the uk-railway-stations dataset (ODbL). Updates every minute.</footer>
+  <footer>Line status, journeys and live Tube, Overground, Elizabeth line and DLR times from TfL Open Data. Train-company times come from TfL's timetable unless you add a free National Rail key for live times. Station codes from the uk-railway-stations dataset (ODbL). Updates every minute.</footer>
 </div>
 
 <script>
@@ -396,34 +460,32 @@ const labelOf=q=>{const c=crsOf(q);return c?c[1]:String(q||"").trim()};
    c2c only publishes ONE status for its whole network. So each c2c leg lists the places that
    matter to it ("near"): a c2c problem only counts against a leg if it mentions one of them.
    OCKENDON_LINE: the Upminster–Ockendon–Chafford Hundred–Grays branch your c2c leg runs on.
-   C2C_MAIN: Barking to Upminster on the main line (only used when the District isn't running). */
+   C2C_THROUGH (below) adds the main line, since the same train carries on to Barking. */
 const OCKENDON_LINE=["ockendon","chafford","grays","upminster","ockendon line"];
 // The other way to Grays (Barking–Rainham–Purfleet–Grays). A notice about that branch only
-// counts against your c2c leg if it also names Ockendon or Chafford Hundred.
-const RAINHAM_LINE={other:["rainham","purfleet","via rainham"],core:["ockendon","chafford"]};
-const C2C_MAIN=["barking","upminster","main line","fenchurch"];
+// counts against your c2c leg if it also names Ockendon, Chafford Hundred or Upminster.
+const RAINHAM_LINE={other:["rainham","purfleet","via rainham"],core:["ockendon","chafford","upminster"]};
+// Ockendon trains carry on through Upminster to Barking, so the c2c leg covers all of this.
+const C2C_THROUGH=[...OCKENDON_LINE,"main line","dagenham dock"];
 /* TRIPS: the two hand-built commute directions.
    Each has:
-     legs   – the route in order. "lines" lists which lines can do that leg.
-              either:true means any one of them will do (District OR c2c from Upminster to Barking),
-              so the leg only counts as broken if they're ALL broken.
-     boards – the live departure boards to show. station/dest are patterns that pick out
-              the right station and the right direction from TfL's arrivals list. */
+     legs   – the route in order: one c2c train between Ockendon and Barking (no change needed
+              at Upminster), then the Suffragette between Barking and Woodgrange Park.
+              "near" lists places that matter to a c2c leg (see relevance()).
+     boards – the live TfL departure boards to show. station/dest are patterns that pick out
+              the right station and the right direction from TfL's arrivals list.
+              (c2c gets its own National Rail board; see loadLive.) */
 const TRIPS={
  "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",legs:[
-  {from:"Ockendon",to:"Upminster",lines:["c2c"],near:OCKENDON_LINE,...RAINHAM_LINE},
-  {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true,near:C2C_MAIN},
+  {from:"Ockendon",to:"Barking",lines:["c2c"],near:C2C_THROUGH,...RAINHAM_LINE},
   {from:"Barking",to:"Woodgrange Park",lines:["suffragette"]}],
   boards:[
-   {line:"district",title:"Upminster to Barking",station:/upminster/i,platform:/westbound/i,dest:x=>!/upminster/i.test(x)},
    {line:"suffragette",title:"Barking to Woodgrange Park",station:/^barking\b(?!.*riverside)/i,dest:x=>!/riverside|barking/i.test(x)}]},
  "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",legs:[
   {from:"Woodgrange Park",to:"Barking",lines:["suffragette"]},
-  {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true,near:C2C_MAIN},
-  {from:"Upminster",to:"Ockendon",lines:["c2c"],near:OCKENDON_LINE,...RAINHAM_LINE}],
+  {from:"Barking",to:"Ockendon",lines:["c2c"],near:C2C_THROUGH,...RAINHAM_LINE}],
   boards:[
-   {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
-   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,platform:/eastbound/i,dest:x=>/upminster/i.test(x)}]}
+   {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)}]}
 };
 // A train company's status covers its whole network, so it only counts against ONE LEG if it
 // mentions somewhere on that leg: its two ends, any stops in between, or its "near" words.
@@ -449,7 +511,8 @@ function plannerHasTrains(leg,id,js){
  return js.slice(0,5).some(j=>(j.legs||[]).some(l=>{
   if(!(l.routeOptions||[]).some(o=>want.has(o.lineIdentifier?.id)||want.has(String(o.name||"").toLowerCase())))return false;
   const names=[l.departurePoint?.commonName,l.arrivalPoint?.commonName,...(l.path?.stopPoints||[]).map(p=>p.name)].map(x=>clean(x).toLowerCase());
-  return has(names,clean(leg.from))&&has(names,clean(leg.to));
+  // Trains from where you're starting (or into where you're going) are proof enough.
+  return has(names,clean(leg.from))||has(names,clean(leg.to));
  }));
 }
 
@@ -718,15 +781,71 @@ $("dirNote").addEventListener("click",e=>{if(e.target.id==="backAuto"){e.prevent
 // For "Elsewhere" journeys there's no hand-built route, so this turns TfL's first suggested
 // journey into legs. Walking is skipped. If TfL offers more than one line for a leg
 // (e.g. District or Hammersmith & City), it becomes an "either" leg like on the commute.
+// TfL sometimes splits one train ride into two legs on the same line with no wait between them.
+// That's not a real change, so those get joined back into one leg.
 function legsFromJourney(j){
  if(!j)return[];
- return(j.legs||[]).filter(l=>l.mode?.id!=="walking"&&l.mode?.id!=="cycle").map(l=>{
+ const out=[];
+ for(const l of (j.legs||[]).filter(l=>l.mode?.id!=="walking"&&l.mode?.id!=="cycle")){
   const ids=[...new Set((l.routeOptions||[]).map(o=>o.lineIdentifier?.id).filter(Boolean))];
-  return{from:clean(l.departurePoint?.commonName),to:clean(l.arrivalPoint?.commonName),
+  const leg={from:clean(l.departurePoint?.commonName),to:clean(l.arrivalPoint?.commonName),
    lines:ids.length?ids:[l.mode?.id||"unknown"],either:ids.length>1,mode:l.mode?.id,
    stops:(l.path?.stopPoints||[]).map(p=>clean(p.name)),toNaptan:l.arrivalPoint?.naptanId,
-   naptan:l.departurePoint?.naptanId,dirs:[...new Set((l.routeOptions||[]).flatMap(o=>o.directions||[]).map(d=>clean(d).toLowerCase()).filter(Boolean))]};
- });
+   naptan:l.departurePoint?.naptanId,dep:l.departureTime,arr:l.arrivalTime,
+   dirs:[...new Set((l.routeOptions||[]).flatMap(o=>o.directions||[]).map(d=>clean(d).toLowerCase()).filter(Boolean))]};
+  const prev=out[out.length-1];
+  if(prev&&prev.lines.length===1&&leg.lines.length===1&&prev.lines[0]===leg.lines[0]&&prev.arr&&prev.arr===leg.dep){
+   prev.stops=[...prev.stops,prev.to,...leg.stops];prev.to=leg.to;prev.toNaptan=leg.toNaptan;prev.arr=leg.arr;continue;
+  }
+  out.push(leg);
+ }
+ return out;
+}
+
+/* ---------- Live National Rail times (optional) ----------
+   TfL has no live times for train companies like c2c. National Rail does (its "Darwin" feed, via
+   the Rail Data Marketplace), and it lets this page call it directly, but it needs a free key.
+   The key is pasted into the page once and saved only in that browser, never in the code,
+   because this site's code is public. Without a key, train-company legs just link to
+   National Rail's own live departures page. */
+const NR_URL="https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120/GetDepBoardWithDetails/";
+const nrKey=()=>store.get("jf-nrkey","");
+const NRLIVE={};   // "OCK>BKG" -> {t, data} or {t, error}; kept for 50 seconds
+const isNrLeg=l=>l.lines.every(id=>RAW[id]?.modeName==="national-rail"||id==="c2c");
+async function nrBoard(from,to){
+ const key=nrKey();if(!key||!from)return null;
+ const k=from+">"+(to||""),c=NRLIVE[k];
+ if(c&&Date.now()-c.t<50e3)return c;
+ let res;
+ try{
+  const r=await fetch(`${NR_URL}${from}?numRows=8${to?`&filterCrs=${to}&filterType=to`:""}`,{headers:{"x-apikey":key}});
+  res=r.status===401||r.status===403?{error:"key"}:!r.ok?{error:`National Rail said ${r.status}`}:{data:await r.json()};
+ }catch{res={error:"Couldn't reach National Rail"}}
+ res.t=Date.now();NRLIVE[k]=res;return res;
+}
+// Minutes from now until a "HH:MM" time, in UK time (copes with midnight).
+const ukMinsNow=()=>{const [h,m]=new Date().toLocaleTimeString("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).split(":").map(Number);return h*60+m};
+const minsUntil=t=>{const m=/^(\d\d):(\d\d)/.exec(t||"");if(!m)return 999;let d=(+m[1])*60+(+m[2])-ukMinsNow();if(d<-720)d+=1440;return d};
+const nrCancelled=s=>s.isCancelled||/cancel/i.test(s.etd||"");
+// What the next hour of trains on a leg looks like.
+function nrSummary(data){
+ const all=data?.trainServices||[];
+ const soon=all.filter(s=>minsUntil(s.std)<=60);
+ const svcs=soon.length?soon:all.slice(0,3);
+ const cancelled=svcs.filter(nrCancelled).length;
+ const late=svcs.filter(s=>!nrCancelled(s)&&s.etd&&!/^on time$/i.test(s.etd)).length;
+ return{count:svcs.length,cancelled,late};
+}
+// National Rail's own notice text for a board (e.g. "No service between Barking and Grays via Rainham").
+const nrMessages=data=>(data?.nrccMessages||[]).map(m=>(typeof m==="string"?m:(m.value||m.Value||"")).replace(/<[^>]+>/g,"").trim()).filter(Boolean);
+// Best available words for a train company's problem: its notice text from National Rail or TfL's
+// planner, rather than a bare link (c2c's TfL status is often just a link to National Rail).
+function nrTexts(id,reasons,js,live){
+ const isUrl=r=>/^\s*(?:https?:)?\/\/\S+\s*$/.test(r);
+ const want=new Set([id,RAW[id]?.id].filter(Boolean));
+ const planner=js.flatMap(j=>(j.legs||[]).filter(l=>(l.routeOptions||[]).some(o=>want.has(o.lineIdentifier?.id))).flatMap(l=>(l.disruptions||[]).map(d=>d.description))).filter(Boolean);
+ const words=[...new Set([...reasons.filter(r=>!isUrl(r)),...nrMessages(live?.data),...planner])];
+ return{words,urlOnly:!words.length&&reasons.length>0&&reasons.every(isUrl)};
 }
 
 /* ---------- The main check ----------
@@ -757,16 +876,36 @@ async function check(){
  // Station orders for any TfL line on this trip whose problem is only "between" certain stations.
  await loadSequences([...new Set(tLegs.flatMap(l=>l.lines))].filter(id=>RAW[id]&&RAW[id].modeName!=="national-rail"&&
   (RAW[id].lineStatuses||[]).some(s=>classify(s.statusSeverity)!=="good"&&/between/i.test(s.reason||""))));
+ // Live National Rail boards for each train-company leg (only if a key has been added).
+ const nrLive={};
+ await Promise.all(tLegs.filter(isNrLeg).map(async l=>{const r=await nrBoard(crsForName(l.from),crsForName(l.to));if(r)nrLive[l.from+">"+l.to]=r}));
  // How one line is doing on one leg.
  const st=(id,leg)=>{
   const l=statusOk&&RAW[id];
   if(!l)return{state:"na",label:id==="bus"||id==="unknown"?"No live status":"Status unknown",reasons:[]};
   const s=l.modeName==="national-rail"?lineState(l):lineStateFor(l,leg);
-  if(l.modeName==="national-rail"&&(s.state==="bad"||s.state==="warn")){
+  if(l.modeName!=="national-rail")return s;
+  const live=nrLive[leg.from+">"+leg.to];
+  if(s.state==="bad"||s.state==="warn"){
+   const {words,urlOnly}=nrTexts(id,s.reasons,js,live);
+   const onlyNotice=(l.lineStatuses||[]).every(x=>x.statusSeverity===0);
    // A train company's problem that doesn't mention this leg is somewhere else on its network.
-   if(s.reasons.length&&!s.reasons.some(r=>affects(leg,r))){s.state="good";s.offRoute=true}
+   if(words.length&&!words.some(r=>affects(leg,r))){s.state="good";s.offRoute=true;s.reasons=[...words,...s.reasons]}
+   // Just a "Special Service" link with no details, and TfL's planner has trains on this bit: running.
+   else if(urlOnly&&onlyNotice&&plannerHasTrains(leg,id,js)){s.state="good";s.notice=true}
    // Still flagged as broken, but TfL's planner has trains on this bit: they're running, maybe with delays.
    else if(s.state==="bad"&&plannerHasTrains(leg,id,js)){s.state="warn";s.running=true}
+   if(words.length&&!s.offRoute)s.reasons=[...words,...s.reasons];
+  }
+  // Live times beat everything else: they show what's actually happening.
+  if(live?.data){
+   const sm=nrSummary(live.data);s.live=sm;
+   if(sm.count&&sm.cancelled===sm.count){s.state="bad";s.liveNote=`every train in the next hour is cancelled`}
+   else if(sm.count){
+    if(sm.cancelled||sm.late){if(s.state!=="bad")s.state="warn";else s.state="warn";
+     s.liveNote=[sm.cancelled&&`${sm.cancelled} cancelled`,sm.late&&`${sm.late} running late`].filter(Boolean).join(", ")+" in the next hour";}
+    else{s.state="good";s.liveNote="the next trains are on time"}
+   }
   }
   return s;
  };
@@ -825,7 +964,7 @@ const SAY={
   "Not fucked. Everything's running. Go and get your train.",
   "Unfucked. Miracles do happen. Go.",
   "Not even slightly fucked. Enjoy it while it lasts.",
-  "All clear. c2c and TfL are behaving themselves for once.",
+  "All clear. {ops} behaving themselves for once.",
   "Smooth as you like. Nothing's broken. Get moving.",
   "Zero fucks required. Everything's on time-ish.",
   "Not fucked. Write it in your diary, this doesn't happen often.",
@@ -846,28 +985,95 @@ const SAY={
 };
 // Original animated scenes for each level, drawn here so nothing can fail to load.
 // TRAIN draws a little c2c-coloured train at position x,y. TRACK draws rails with moving sleepers.
-const TRAIN=(x,y,extra="")=>`<g transform="translate(${x} ${y})" ${extra}><rect x="0" y="0" width="96" height="34" rx="8" fill="var(--c2c)"/><rect x="0" y="0" width="96" height="34" rx="8" fill="none" stroke="var(--fg)" stroke-width="2.5"/>
+const TRAIN=(x,y,extra="",o={})=>`<g transform="translate(${x} ${y})" ${extra}><rect x="0" y="0" width="96" height="34" rx="8" fill="var(--train,var(--c2c))"/><rect x="0" y="0" width="96" height="34" rx="8" fill="none" stroke="var(--fg)" stroke-width="2.5"/>
  <rect x="10" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="32" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><rect x="54" y="7" width="16" height="12" rx="2" fill="var(--panel)"/><path d="M78 7h8a4 4 0 0 1 4 4v8h-12z" fill="var(--panel)"/>
- <circle cx="20" cy="38" r="6" fill="var(--fg)"/><circle cx="76" cy="38" r="6" fill="var(--fg)"/></g>`;
+ ${o.shades?`<rect x="76" y="8" width="17" height="7" rx="3" fill="#111"/><line x1="70" y1="10" x2="77" y2="10" stroke="#111" stroke-width="2"/>`:""}
+ ${o.hat?`<path d="M64 1q16-22 32 0z" fill="var(--bad)" stroke="var(--fg)" stroke-width="2"/><rect x="62" y="-2" width="36" height="6" rx="3" fill="var(--panel)" stroke="var(--fg)" stroke-width="1.5"/><circle cx="80" cy="-13" r="4.5" fill="var(--panel)" stroke="var(--fg)" stroke-width="1.5"/>`:""}
+ <circle cx="20" cy="38" r="6" fill="var(--fg)"/>${o.noFront?"":`<circle cx="76" cy="38" r="6" fill="var(--fg)"/>`}</g>`;
+// A stick person standing with their feet at x,y. Options: run (legs going), up (arms up, armCls
+// to animate them), tap (foot tapping), cap (guard's hat), cls (animate the whole person), extra (more SVG).
+const LIMB='stroke="var(--fg)" stroke-width="2.5" stroke-linecap="round"';
+const PERSON=(x,y,o={})=>`<g transform="translate(${x} ${y})"><g class="${o.cls||""}">
+ <circle cx="0" cy="-38" r="5" fill="var(--panel)" stroke="var(--fg)" stroke-width="2"/>${o.cap?`<path d="M-7-41h14l-2-6h-10z" fill="var(--fg)"/>`:""}
+ <line x1="0" y1="-33" x2="0" y2="-14" ${LIMB}/>
+ ${o.up?`<line class="${o.armCls||""}" x1="0" y1="-29" x2="-9" y2="-43" ${LIMB}/><line class="${o.armCls||""}" style="animation-direction:alternate-reverse" x1="0" y1="-29" x2="9" y2="-43" ${LIMB}/>`
+   :`<line x1="0" y1="-29" x2="-8" y2="-19" ${LIMB}/><line x1="0" y1="-29" x2="8" y2="-19" ${LIMB}/>`}
+ <line class="${o.run?"lg1":""}" x1="0" y1="-14" x2="-6" y2="0" ${LIMB}/><line class="${o.run?"lg2":o.tap?"tap":""}" x1="0" y1="-14" x2="6" y2="0" ${LIMB}/>
+ ${o.extra||""}</g></g>`;
+// A clock face with a spinning minute hand (speed: "fast" or "slow").
+const CLOCK=(x,y,speed)=>`<circle cx="${x}" cy="${y}" r="16" fill="var(--panel)" stroke="var(--fg)" stroke-width="2.5"/><line x1="${x}" y1="${y}" x2="${x+7}" y2="${y}" ${LIMB}/>
+ <line class="hand ${speed}" style="transform-origin:${x}px ${y}px" x1="${x}" y1="${y}" x2="${x}" y2="${y-12}" ${LIMB}/><circle cx="${x}" cy="${y}" r="2" fill="var(--fg)"/>`;
+// A station platform along the bottom, with its yellow safety line.
+const PLATFORM=`<rect x="0" y="104" width="360" height="14" fill="var(--line)"/><line x1="0" y1="106" x2="360" y2="106" stroke="var(--sun)" stroke-width="2" stroke-dasharray="10 6"/>`;
 const TRACK=y=>`<line x1="0" y1="${y}" x2="360" y2="${y}" stroke="var(--fg)" stroke-width="3"/><line class="sleepers" x1="0" y1="${y+6}" x2="360" y2="${y+6}" stroke="var(--muted)" stroke-width="5" stroke-dasharray="4 14"/>`;
 // SCENES: the cartoons for each level. Each is a function that returns SVG drawing code.
-// The class names (bob, crawl, flame, tumble…) link to the animations in the CSS.
+// The class names (bob, crawl, flame, wheelaway, judder…) link to the animations in the CSS.
+// Each gets the verdict's context (c), so it can use the trip's stations or the level.
 const SCENES={
  no:[
   ()=>`${TRACK(112)}<g class="bob">${TRAIN(130,68)}</g><circle class="puff p1" cx="210" cy="60" r="7" fill="var(--muted)"/><circle class="puff p2" cx="210" cy="60" r="9" fill="var(--muted)"/><circle class="puff p3" cx="210" cy="60" r="6" fill="var(--muted)"/>`,
-  ()=>`<g class="spin" style="transform-origin:300px 34px"><circle cx="300" cy="34" r="14" fill="var(--sun)"/>${[0,45,90,135,180,225,270,315].map(a=>`<line x1="300" y1="12" x2="300" y2="4" stroke="var(--sun)" stroke-width="3" stroke-linecap="round" transform="rotate(${a} 300 34)"/>`).join("")}</g>${TRACK(112)}<g class="cross">${TRAIN(0,68)}</g>`],
+  ()=>`<g class="spin" style="transform-origin:300px 34px"><circle cx="300" cy="34" r="14" fill="var(--sun)"/>${[0,45,90,135,180,225,270,315].map(a=>`<line x1="300" y1="12" x2="300" y2="4" stroke="var(--sun)" stroke-width="3" stroke-linecap="round" transform="rotate(${a} 300 34)"/>`).join("")}</g>${TRACK(112)}<g class="cross">${TRAIN(0,68)}</g>`,
+  ()=>`${TRACK(112)}<g class="bob">${TRAIN(120,68,"",{shades:true})}</g>
+  ${["♪","♫","♪"].map((n,i)=>`<text class="note" style="animation-delay:${i*-.8}s" x="${232+i*18}" y="64">${n}</text>`).join("")}
+  <text class="cap" x="12" y="24">ON TIME, ACTUALLY</text>`,
+  ()=>`${PLATFORM}<rect x="200" y="12" width="146" height="40" rx="5" fill="var(--board)"/><text x="273" y="28" text-anchor="middle" class="sign">YOUR TRAIN</text><text x="273" y="44" text-anchor="middle" class="sign green">ON TIME</text>
+  ${PERSON(120,104,{cls:"dance",up:true,armCls:"flail"})}${PERSON(80,104,{})}
+  <text class="boing" x="140" y="46">WOO!</text>`],
  bit:[
   ()=>`${TRACK(112)}<g class="crawl">${TRAIN(-100,68)}</g><g class="snail"><path d="M0 0h26q6 0 6-6" fill="none" stroke="var(--leaf)" stroke-width="5" stroke-linecap="round"/><circle cx="12" cy="-9" r="10" fill="var(--shell)" stroke="var(--fg)" stroke-width="2"/><path d="M12-9m-4 0a4 4 0 1 1 6 3" fill="none" stroke="var(--fg)" stroke-width="2"/><line x1="30" y1="-6" x2="34" y2="-15" stroke="var(--leaf)" stroke-width="2"/></g>`,
-  ()=>`${TRACK(112)}${TRAIN(130,68)}<g class="dots"><circle cx="246" cy="52" r="4" fill="var(--fg)"/><circle cx="260" cy="52" r="4" fill="var(--fg)"/><circle cx="274" cy="52" r="4" fill="var(--fg)"/></g>${[30,90,160,240,300].map((x,i)=>`<ellipse class="leafd" style="animation-delay:${i*-.9}s" cx="${x}" cy="-10" rx="7" ry="4" fill="var(--leaf2)"/>`).join("")}`],
+  ()=>`${TRACK(112)}${TRAIN(130,68)}<g class="dots"><circle cx="246" cy="52" r="4" fill="var(--fg)"/><circle cx="260" cy="52" r="4" fill="var(--fg)"/><circle cx="274" cy="52" r="4" fill="var(--fg)"/></g>${[30,90,160,240,300].map((x,i)=>`<ellipse class="leafd" style="animation-delay:${i*-.9}s" cx="${x}" cy="-10" rx="7" ry="4" fill="var(--leaf2)"/>`).join("")}`,
+  ()=>`${PLATFORM}${CLOCK(40,32,"slow")}
+  <rect x="200" y="12" width="146" height="40" rx="5" fill="var(--board)"/><text x="273" y="28" text-anchor="middle" class="sign">08:12 FENCHURCH ST</text><text x="273" y="44" text-anchor="middle" class="sign blink">DELAYED</text>
+  ${PERSON(150,104,{tap:true,extra:`<rect x="8" y="-24" width="8" height="10" rx="2" fill="var(--shell)" stroke="var(--fg)" stroke-width="1.5"/>
+   <path class="steam" d="M11-27q-3-4 0-8q3-4 0-8" fill="none" stroke="var(--muted)" stroke-width="1.5"/><path class="steam" style="animation-delay:-1s" d="M15-27q-3-4 0-8q3-4 0-8" fill="none" stroke="var(--muted)" stroke-width="1.5"/>`})}
+  <text class="cap" x="108" y="80" text-anchor="end">sigh</text>`,
+  ()=>`${TRACK(112)}${TRAIN(130,68,"",{hat:true})}<rect x="0" y="106" width="360" height="5" fill="var(--snow)"/>
+  ${[18,52,84,118,150,186,214,248,282,310,340,66,232].map((x,i)=>`<circle class="snowf" style="animation-delay:${(i*-.37).toFixed(2)}s" cx="${x}" cy="${(i*11)%60}" r="${2+(i%3)}" fill="var(--snow)"/>`).join("")}
+  <text class="cap" x="12" y="24">THE WRONG KIND OF SNOW</text>`],
  yes:[
   ()=>`${TRACK(112)}<g transform="rotate(-8 180 90)">${TRAIN(130,68)}</g>${[0,1,2].map(i=>`<path class="flame" style="animation-delay:${i*-.25}s;transform-origin:${150+i*28}px 70px" d="M${150+i*28} 72 q-12-14 0-34 q4 12 10 8 q6 16-10 26z" fill="var(--flame${i%2+1})"/>`).join("")}${[0,1,2].map(i=>`<circle class="smoke" style="animation-delay:${i*-1}s" cx="${165+i*12}" cy="40" r="${10+i*3}" fill="var(--muted)"/>`).join("")}`,
-  ()=>`<line x1="0" y1="112" x2="360" y2="112" stroke="var(--fg)" stroke-width="3"/><rect x="40" y="40" width="4" height="72" fill="var(--fg)"/><rect x="14" y="24" width="96" height="26" rx="3" fill="var(--board)"/><text x="62" y="42" text-anchor="middle" class="sign">NO TRAINS</text><g class="tumble"><circle r="18" fill="none" stroke="var(--weed)" stroke-width="2.5"/><path d="M-14-6q10 14 26 2M-10 10q8-18 22-6M-4-16q-2 18 12 26" fill="none" stroke="var(--weed)" stroke-width="2"/></g>`,
-  ()=>`<rect x="40" y="14" width="280" height="112" rx="8" fill="var(--board)"/>${["Upminster","Barking","Woodgrange Pk"].map((n,i)=>`<text x="58" y="${46+i*30}" class="sign">${n}</text><text x="302" y="${46+i*30}" text-anchor="end" class="sign red blink" style="animation-delay:${i*.3}s">CANCELLED</text>`).join("")}`],
- none:[()=>SCENES.yes[1]()],
+  ()=>`${TRACK(112)}<g transform="rotate(8 214 108)">${TRAIN(118,68,"",{noFront:true})}</g>
+  <g class="wheelaway"><g class="wheelspin"><circle r="9" fill="var(--panel)" stroke="var(--fg)" stroke-width="3"/><line x1="-8" y1="0" x2="8" y2="0" ${LIMB}/><line x1="0" y1="-8" x2="0" y2="8" ${LIMB}/></g></g>
+  <text class="boing" x="236" y="42">BOING!</text>
+  <g class="chase">${PERSON(0,112,{run:true,cap:true,up:true,armCls:"flail"})}</g>
+  <text class="cap" x="12" y="24">WHEEL'S COME OFF</text>`,
+  (c={})=>`<rect x="40" y="14" width="280" height="112" rx="8" fill="var(--board)"/>${(c.stops||["Upminster","Barking","Woodgrange Pk"]).map((n,i)=>`<text x="58" y="${46+i*30}" class="sign">${n}</text><text x="302" y="${46+i*30}" text-anchor="end" class="sign red blink" style="animation-delay:${i*.3}s">CANCELLED</text>`).join("")}`,
+  ()=>`<line x1="0" y1="120" x2="360" y2="120" stroke="var(--fg)" stroke-width="3"/><line class="sleepers" x1="0" y1="130" x2="360" y2="130" stroke="var(--muted)" stroke-width="3" stroke-dasharray="18 14"/>
+  <g class="busgo"><g class="judder">
+   <rect x="0" y="40" width="154" height="70" rx="12" fill="var(--panel)" stroke="var(--fg)" stroke-width="2.5"/>
+   <rect x="10" y="47" width="134" height="13" rx="3" fill="var(--board)"/><text x="77" y="57" text-anchor="middle" class="sign tiny">RAIL REPLACEMENT</text>
+   ${[0,1,2,3,4].map(i=>`<rect x="${10+i*27}" y="65" width="22" height="22" rx="3" fill="var(--bg)" stroke="var(--fg)" stroke-width="1.5"/><circle cx="${16+i*27}" cy="77" r="5" fill="var(--panel)" stroke="var(--fg)" stroke-width="1.5"/><circle cx="${25+i*27}" cy="73" r="5" fill="var(--panel)" stroke="var(--fg)" stroke-width="1.5"/>`).join("")}
+   <rect x="20" y="30" width="30" height="12" rx="2" fill="var(--shell)" stroke="var(--fg)" stroke-width="1.5"/><rect x="56" y="33" width="22" height="9" rx="2" fill="var(--leaf)" stroke="var(--fg)" stroke-width="1.5"/>
+   <circle cx="34" cy="112" r="9" fill="var(--fg)"/><circle cx="120" cy="112" r="9" fill="var(--fg)"/>
+  </g><circle class="puff p1" cx="-4" cy="100" r="6" fill="var(--muted)"/><circle class="puff p2" cx="-4" cy="100" r="8" fill="var(--muted)"/></g>
+  <text class="cap" x="348" y="24" text-anchor="end">ETA: TUESDAY</text>`,
+  (c={})=>`${PLATFORM}${CLOCK(40,32,"fast")}
+  <rect x="206" y="12" width="140" height="40" rx="5" fill="var(--board)"/><text x="276" y="28" text-anchor="middle" class="sign">NEXT TRAIN</text>
+  <text x="276" y="44" text-anchor="middle" class="sign red blink">${c.level==="none"?"NEVER":"47 MIN"}</text>
+  ${[70,92,112,134,154,178,198,222,246,268,292,316].map((x,i)=>PERSON(x,104,{cls:"fidget",tap:i%3===0})).join("")}`,
+  ()=>`${TRACK(112)}${TRAIN(10,68)}<g class="dots"><circle cx="112" cy="52" r="3.5" fill="var(--fg)"/><circle cx="123" cy="52" r="3.5" fill="var(--fg)"/><circle cx="134" cy="52" r="3.5" fill="var(--fg)"/></g>
+  <rect x="216" y="30" width="6" height="82" fill="var(--fg)"/><rect x="204" y="14" width="30" height="46" rx="6" fill="var(--board)"/>
+  <circle class="blink" cx="219" cy="27" r="7" fill="#ff3b30"/><circle cx="219" cy="47" r="7" fill="#333"/>
+  ${[[240,14,250,6],[244,26,256,24],[238,38,248,46]].map(([a,b,c2,d],i)=>`<line class="spark" style="animation-delay:${i*.15}s" x1="${a}" y1="${b}" x2="${c2}" y2="${d}" stroke="var(--sun)" stroke-width="2.5" stroke-linecap="round"/>`).join("")}
+  ${PERSON(282,112,{cap:true,extra:`<g class="swing"><line x1="0" y1="-29" x2="-16" y2="-40" ${LIMB}/><rect x="-26" y="-46" width="12" height="5" rx="2" fill="var(--muted)" stroke="var(--fg)" stroke-width="1.5"/></g>`})}
+  <text class="cap" x="348" y="24" text-anchor="end">SIGNAL FAILURE</text>`],
+ none:[c=>SCENES.yes[4](c),c=>SCENES.yes[1](c)],
  closed:[
-  ()=>`<circle cx="300" cy="34" r="16" fill="var(--moon)"/><circle cx="308" cy="28" r="14" fill="var(--bg)"/>${[[40,20],[110,40],[200,16],[250,52]].map(([x,y],i)=>`<circle class="twinkle" style="animation-delay:${i*.6}s" cx="${x}" cy="${y}" r="2.5" fill="var(--moon)"/>`).join("")}${TRACK(112)}${TRAIN(130,68)}<text class="zzz z1" x="230" y="64">z</text><text class="zzz z2" x="240" y="56">z</text><text class="zzz z3" x="252" y="46">Z</text>`],
+  ()=>`<circle cx="300" cy="34" r="16" fill="var(--moon)"/><circle cx="308" cy="28" r="14" fill="var(--bg)"/>${[[40,20],[110,40],[200,16],[250,52]].map(([x,y],i)=>`<circle class="twinkle" style="animation-delay:${i*.6}s" cx="${x}" cy="${y}" r="2.5" fill="var(--moon)"/>`).join("")}${TRACK(112)}${TRAIN(130,68)}<text class="zzz z1" x="230" y="64">z</text><text class="zzz z2" x="240" y="56">z</text><text class="zzz z3" x="252" y="46">Z</text>`,
+  ()=>`<circle cx="310" cy="30" r="16" fill="var(--moon)"/><circle cx="318" cy="24" r="14" fill="var(--bg)"/>
+  ${[[40,20],[110,40],[230,16]].map(([x,y],i)=>`<circle class="twinkle" style="animation-delay:${i*.6}s" cx="${x}" cy="${y}" r="2.5" fill="var(--moon)"/>`).join("")}
+  <line x1="0" y1="118" x2="360" y2="118" stroke="var(--fg)" stroke-width="3"/>
+  <rect x="16" y="40" width="120" height="78" fill="var(--panel)" stroke="var(--fg)" stroke-width="2.5"/>${[0,1,2,3,4,5].map(i=>`<line x1="16" y1="${50+i*11}" x2="136" y2="${50+i*11}" stroke="var(--line)" stroke-width="2"/>`).join("")}
+  <rect x="30" y="26" width="92" height="16" rx="2" fill="var(--board)"/><text x="76" y="37.5" text-anchor="middle" class="sign">CLOSED</text>
+  <g class="peek"><path d="M205 76h30l-15 20z" fill="var(--fox)" stroke="var(--fg)" stroke-width="1.5"/><path d="M205 76l3-12 8 10zM235 76l-3-12-8 10z" fill="var(--fox)" stroke="var(--fg)" stroke-width="1.5"/>
+   <circle class="twinkle" cx="214" cy="82" r="2" fill="var(--fg)"/><circle class="twinkle" cx="226" cy="82" r="2" fill="var(--fg)"/><circle cx="220" cy="94" r="2.2" fill="var(--fg)"/></g>
+  <rect x="198" y="84" width="44" height="34" rx="3" fill="var(--muted)" stroke="var(--fg)" stroke-width="2"/>
+  <rect class="lid" x="194" y="78" width="52" height="7" rx="2" fill="var(--muted)" stroke="var(--fg)" stroke-width="2"/>`],
  dunno:[
-  ()=>`${TRACK(112)}${TRAIN(130,68)}<text class="huh" x="178" y="56" text-anchor="middle">?</text>`]
+  ()=>`${TRACK(112)}${TRAIN(130,68)}<text class="huh" x="178" y="56" text-anchor="middle">?</text>`,
+  ()=>`<g class="shake"><circle cx="180" cy="70" r="46" fill="#151515" stroke="var(--muted)" stroke-width="1.5"/><circle cx="166" cy="54" r="10" fill="#ffffff22"/>
+  <circle cx="180" cy="72" r="22" fill="#1d2f7a"/><path d="M164 64h32l-16 24z" fill="#3a5bd9"/>
+  <text x="180" y="72" text-anchor="middle" class="ball8">ASK AGAIN</text><text x="180" y="80" text-anchor="middle" class="ball8">LATER</text></g>`]
 };
 // pickFrom chooses a random item but never the same one twice in a row.
 let lastPick={};
@@ -885,7 +1091,8 @@ function speak(){
  a.textContent=big;a.classList.remove("pulse");a.classList.toggle("small",big.length>4);
  $("sub").textContent=sub;
  $("alt").textContent=verdictCtx.alt||"";$("alt").hidden=!verdictCtx.alt;
- $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")()}</svg>`;
+ $("scene").style.setProperty("--train",ctx.train||"var(--c2c)");
+ $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")({...ctx,level})}</svg>`;
 }
 // Decides the overall level, checking in this order:
 //   dunno  – TfL isn't answering, or a picked journey couldn't be planned
@@ -899,6 +1106,8 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
  const list=ls=>[...new Set(ls.map(names))].join(" and ");
  const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
  let level,ctx={};
+ // Who runs this trip, for lines like "c2c and TfL are behaving" (or just "TfL is" with no train company).
+ const ops=[...new Set(legs.flatMap(l=>l.lines).filter(id=>RAW[id]?.modeName==="national-rail").map(lname))];
  if(noStatus||(T.custom&&jErr)||(T.custom&&journeys.length&&!legs.length))level="dunno";
  else if(closed.length&&!bad.length){level="closed";ctx={line:list(closed)}}
  else if(bad.length){level="yes";ctx={line:list(bad),from:bad[0].from,to:bad[0].to}}
@@ -917,6 +1126,11 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
    alt=`Plan B: leave ${hm(j.startDateTime)}, arrive ${hm(j.arrivalDateTime)} on the ${via.join(", then ")}${walk.length?`, with ${/^(8|11|18)$|^8\d$/.test(String(Math.max(...walk)))?"an":"a"} ${Math.max(...walk)}-minute walk`:""}.`;
   }
  }
+ ctx.ops=ops.length?`${ops.join(" and ")} and TfL are`:"TfL is";
+ // Stations for the cartoon departure board, and the train colour for the cartoons.
+ const short=n=>n.length>17?n.slice(0,16)+"…":n;
+ ctx.stops=[...new Set(legs.flatMap(l=>[l.from,l.to]))].slice(-3).map(short);
+ ctx.train=legs[0]?lcol(legs[0].lines[0]):"var(--c2c)";
  verdictCtx={level,ctx,alt};speak();
 }
 
@@ -929,13 +1143,16 @@ function renderRoute(T,legs,jErr){
  legs.forEach((leg,i)=>{
   html+=`<div class="stop"><i></i>${esc(leg.from)}</div>`;
   const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
-  const why=leg.per.filter(p=>(p.state!=="good"&&p.state!=="na")||p.offRoute||p.elsewhere).map(p=>{
+  const why=leg.per.filter(p=>(p.state!=="good"&&p.state!=="na")||p.offRoute||p.elsewhere||p.notice||p.liveNote).map(p=>{
    const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
    const away=p.elsewhere?p.elsewhere.map(x=>x.toLowerCase()).join(" and "):"";
    const note=p.offRoute?` (that's elsewhere on ${esc(lname(p.id))}, not between ${esc(leg.from)} and ${esc(leg.to)})`
     :p.running?` TfL's journey planner still has trains on this bit, so they look to be running.`
-    :p.elsewhere?` (the ${esc(away)} ${p.elsewhere.length>1||/s$/i.test(away)?"are":"is"} on another part of the line, not between ${esc(leg.from)} and ${esc(leg.to)})`:"";
-   return `<p class="why"><b>${esc(lname(p.id))}:</b> ${richText(r,200)}${note} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
+    :p.elsewhere?` (the ${esc(away)} ${p.elsewhere.length>1||/s$/i.test(away)?"are":"is"} on another part of the line, not between ${esc(leg.from)} and ${esc(leg.to)})`
+    :p.notice?` (${esc(lname(p.id))} has a notice out, but TfL's journey planner still has trains here)`:"";
+   const live=p.liveNote?` <b class="livenote">Live: ${esc(p.liveNote)}.</b>`:"";
+   const body=p.state==="good"&&p.liveNote&&!p.reasons.length?"":richText(r,200)+note;
+   return `<p class="why"><b>${esc(lname(p.id))}:</b> ${body}${live} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
   const pill=p=>RAW[p.id]
    ?`<button type="button" class="pill pillbtn" data-line="${esc(p.id)}" style="${lsty(p.id)}" aria-label="${esc(lname(p.id))} status details">${esc(lname(p.id))} ›</button>`
    :`<span class="pill" style="${lsty(p.id)}">${esc(p.id==="bus"?"Bus":lname(p.id))}</span>`;
@@ -978,14 +1195,27 @@ async function loadLive(T,legs){
   :T.boards;
  // TfL has no live times for train companies like c2c, so for those legs link to National Rail's
  // live departure board instead. It's the same feed c2c's own website and station screens use.
- const nrLegs=legs.filter(l=>l.lines.every(id=>RAW[id]?.modeName==="national-rail"||id==="c2c"));
- const nrCards=nrLegs.map(l=>{
+ const nrCards=legs.filter(isNrLeg).map(l=>{
   const id=l.lines.find(x=>RAW[x]?.modeName==="national-rail"||x==="c2c");
   const from=crsForName(l.from),to=crsForName(l.to);
   const url=from?`https://www.nationalrail.co.uk/live-trains/departures/${from}/${to?to+"/":""}`:"https://www.nationalrail.co.uk/live-trains/";
-  return `<div class="board"><h3><span class="pill" style="${lsty(id)}">${esc(lname(id))}</span>${esc(l.from)} to ${esc(l.to)}</h3>
-   <p class="empty">TfL doesn't publish live ${esc(lname(id))} times.</p>
-   <p><a class="ext" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Live departures from ${esc(l.from)} ↗</a></p></div>`;
+  const link=`<p><a class="ext" href="${esc(url)}" target="_blank" rel="noopener noreferrer">National Rail live departures ↗</a></p>`;
+  const live=from&&NRLIVE[from+">"+(to||"")];
+  let body;
+  if(!nrKey())body=`<p class="empty">TfL doesn't publish live ${esc(lname(id))} times. <button type="button" class="morebtn" data-nrkey>Add a free National Rail key</button> to see them here.</p>`;
+  else if(live?.error==="key")body=`<p class="err">National Rail didn't accept your key. <button type="button" class="morebtn" data-nrkey>Change key</button></p>`;
+  else if(live?.error)body=`<p class="err">${esc(live.error)}.</p>`;
+  else if(live?.data){
+   const svcs=(live.data.trainServices||[]).slice(0,5);
+   body=svcs.length?svcs.map(sv=>{
+    const dest=(sv.destination||[]).map(d=>d.locationName).join(" & ");
+    const cx=nrCancelled(sv),late=!cx&&sv.etd&&!/^on time$/i.test(sv.etd);
+    return `<div class="row"><span><b class="m">${esc(sv.std||"")}</b> ${esc(dest)}${sv.platform?` · Plat ${esc(sv.platform)}`:""}${cx&&sv.cancelReason?`<span class="why">${esc(sv.cancelReason)}</span>`:late&&sv.delayReason?`<span class="why">${esc(sv.delayReason)}</span>`:""}</span>
+     <span class="m ${cx?"bad":late?"warn":"good"}">${esc(cx?"Cancelled":sv.etd||"")}</span></div>`}).join("")
+    :`<p class="empty">No ${esc(lname(id))} trains from ${esc(l.from)} to ${esc(l.to)} in the next two hours.</p>`;
+   body+=nrMessages(live.data).slice(0,2).map(m=>`<p class="note">${esc(m.length>220?m.slice(0,219)+"…":m)}</p>`).join("");
+  }else body=`<p class="empty">No live times for this station.</p>`;
+  return `<div class="board"><h3><span class="pill" style="${lsty(id)}">${esc(lname(id))}</span>${esc(l.from)} to ${esc(l.to)}${nrKey()&&live?.data?` <small class="livetag">Live</small>`:""}</h3>${body}${link}</div>`;
  }).join("");
  if(!boards.length){$("live").innerHTML=nrCards||`<p class="empty">No live times for this journey. TfL only publishes live times for the Tube, Overground, Elizabeth line and DLR.</p>`;return}
  $("live").innerHTML=boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="${lsty(b.line)}">${esc(lname(b.line))}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("")+nrCards;
@@ -1105,7 +1335,7 @@ $("picker").addEventListener("submit",e=>{
  const f=queryOf($("pkFrom").value),t=queryOf($("pkTo").value);
  const hint=$("pkHint");
  if(!f||!t){hint.textContent="Fill in both stations.";hint.classList.add("err");return}
- if(f.toLowerCase()===t.toLowerCase()){hint.textContent="That's the same station twice. Even c2c can't fuck that up.";hint.classList.add("err");return}
+ if(f.toLowerCase()===t.toLowerCase()){hint.textContent="That's the same station twice. Even TfL can't fuck that up.";hint.classList.add("err");return}
  store.set("jf-recent",[[f,t],...store.get("jf-recent",[]).filter(([a,b])=>!(a===f&&b===t))].slice(0,6));
  showPicker(false);
  const h=goHash(f,t);
@@ -1116,6 +1346,12 @@ addEventListener("hashchange",()=>showPicker(false));
 /* ---------- Start-up and refreshing ----------
    Check again now, reroll the wording, re-check when the address changes (switching journey),
    every 60 seconds while the page is visible, and straight away when you come back to the tab. */
+// National Rail key: open the form from any "Add a free National Rail key" button.
+document.addEventListener("click",e=>{if(e.target.closest("[data-nrkey]")){$("nrForm").hidden=false;$("nrKeyInput").value=nrKey();$("nrKeyInput").focus()}});
+$("nrForm").addEventListener("submit",e=>{e.preventDefault();store.set("jf-nrkey",$("nrKeyInput").value.trim());for(const k in NRLIVE)delete NRLIVE[k];$("nrForm").hidden=true;check()});
+$("nrRemove").onclick=()=>{store.set("jf-nrkey","");$("nrKeyInput").value="";for(const k in NRLIVE)delete NRLIVE[k];$("nrForm").hidden=true;check()};
+$("nrCancel").onclick=()=>{$("nrForm").hidden=true};
+
 $("refresh").onclick=check;
 $("reroll").onclick=speak;
 $("answer").onclick=speak;
