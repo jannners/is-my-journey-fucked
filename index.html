@@ -378,7 +378,10 @@ const LIVE_MODES=["tube","overground","elizabeth-line","dlr"];
 // e.g. ["OCK","Ockendon",51.52,0.29]. It loads in the background; CRSP is the promise for it.
 // If it can't load (for example, opening the file straight from your computer), codes just won't work.
 const CRS=new Map();let CRSLIST=[];
-const CRSP=fetch("stations.json").then(r=>r.ok?r.json():[]).then(a=>{CRSLIST=a;a.forEach(s=>CRS.set(s[0],s))}).catch(()=>{});
+const NAME2CRS=new Map();
+const CRSP=fetch("stations.json").then(r=>r.ok?r.json():[]).then(a=>{CRSLIST=a;a.forEach(s=>{CRS.set(s[0],s);NAME2CRS.set(s[1].toLowerCase(),s[0])})}).catch(()=>{});
+// Finds the code for a station name ("Ockendon" -> "OCK"), trying with and without "London".
+const crsForName=n=>{n=clean(n).toLowerCase();return NAME2CRS.get(n)||NAME2CRS.get("london "+n)||NAME2CRS.get(n.replace(/^london\s+/,""))||null};
 // Accepts "OCK", "ock" or "Ockendon (OCK)"; returns [code,name,lat,lon] or null.
 function crsOf(q){q=String(q||"").trim();const m=q.match(/\(([A-Za-z]{3})\)$/);const code=(m?m[1]:/^[A-Za-z]{3}$/.test(q)?q:"").toUpperCase();return(code&&CRS.get(code))||null}
 // queryOf: what to put in the web address for a typed station ("Ockendon (OCK)" becomes "OCK").
@@ -387,10 +390,12 @@ const queryOf=v=>{const c=crsOf(v);return c?c[0]:String(v||"").trim()};
 const labelOf=q=>{const c=crsOf(q);return c?c[1]:String(q||"").trim()};
 
 /* ---------- The commute ----------
-   COMMUTE_STOPS: words that mean a c2c disruption actually affects this journey.
-   c2c only publishes one status for its whole network, so a problem at Shoeburyness
-   shouldn't make your journey "fucked". See relevance() below. */
-const COMMUTE_STOPS=["ockendon","upminster","grays","chafford","barking","west horndon","tilbury","all c2c"];
+   c2c only publishes ONE status for its whole network. So each c2c leg lists the places that
+   matter to it ("near"): a c2c problem only counts against a leg if it mentions one of them.
+   OCKENDON_LINE: the Upminster–Ockendon–Chafford Hundred–Grays branch your c2c leg runs on.
+   C2C_MAIN: Barking to Upminster on the main line (only used when the District isn't running). */
+const OCKENDON_LINE=["ockendon","chafford","grays","upminster","ockendon line"];
+const C2C_MAIN=["barking","upminster","main line","fenchurch"];
 /* TRIPS: the two hand-built commute directions.
    Each has:
      legs   – the route in order. "lines" lists which lines can do that leg.
@@ -399,27 +404,39 @@ const COMMUTE_STOPS=["ockendon","upminster","grays","chafford","barking","west h
      boards – the live departure boards to show. station/dest are patterns that pick out
               the right station and the right direction from TfL's arrivals list. */
 const TRIPS={
- "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",extra:COMMUTE_STOPS,legs:[
-  {from:"Ockendon",to:"Upminster",lines:["c2c"]},
-  {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true},
+ "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",legs:[
+  {from:"Ockendon",to:"Upminster",lines:["c2c"],near:OCKENDON_LINE},
+  {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true,near:C2C_MAIN},
   {from:"Barking",to:"Woodgrange Park",lines:["suffragette"]}],
   boards:[
    {line:"district",title:"Upminster to Barking",station:/upminster/i,dest:x=>!/upminster/i.test(x)},
    {line:"suffragette",title:"Barking to Woodgrange Park",station:/^barking\b(?!.*riverside)/i,dest:x=>!/riverside|barking/i.test(x)}]},
- "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",extra:COMMUTE_STOPS,legs:[
+ "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",legs:[
   {from:"Woodgrange Park",to:"Barking",lines:["suffragette"]},
-  {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true},
-  {from:"Upminster",to:"Ockendon",lines:["c2c"]}],
+  {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true,near:C2C_MAIN},
+  {from:"Upminster",to:"Ockendon",lines:["c2c"],near:OCKENDON_LINE}],
   boards:[
    {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
    {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,dest:x=>/upminster/i.test(x)}]}
 };
-// A train company's status covers its whole network, so only count it if it mentions somewhere on this trip.
-// Builds a search pattern from every station on the trip, plus any extra words like COMMUTE_STOPS.
-function relevance(T,legs){
- const words=new Set(["all lines","all routes","whole","entire",...(T.extra||[])]);
- legs.forEach(l=>[l.from,l.to].forEach(n=>{n=clean(n).replace(/^London\s+/i,"").toLowerCase();if(n.length>=4)words.add(n)}));
+// A train company's status covers its whole network, so it only counts against ONE LEG if it
+// mentions somewhere on that leg: its two ends, any stops in between, or its "near" words.
+// Words like "all lines" or "whole network" always count.
+function relevance(leg){
+ const words=new Set(["all lines","all routes","all c2c","whole","entire",...(leg.near||[])]);
+ [leg.from,leg.to,...(leg.stops||[])].forEach(n=>{n=clean(n).replace(/^London\s+/i,"").toLowerCase();if(n.length>=4)words.add(n)});
  return new RegExp([...words].map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
+}
+// Real-world check: does TfL's journey planner still have trains on this line over this leg?
+// If it does, the trains are running, whatever the headline status says.
+function plannerHasTrains(leg,id,js){
+ const want=new Set([id,RAW[id]?.id].filter(Boolean));
+ const has=(names,n)=>{n=n.toLowerCase();return names.some(x=>x&&(x.includes(n)||n.includes(x)))};
+ return js.slice(0,5).some(j=>(j.legs||[]).some(l=>{
+  if(!(l.routeOptions||[]).some(o=>want.has(o.lineIdentifier?.id)||want.has(String(o.name||"").toLowerCase())))return false;
+  const names=[l.departurePoint?.commonName,l.arrivalPoint?.commonName,...(l.path?.stopPoints||[]).map(p=>p.name)].map(x=>clean(x).toLowerCase());
+  return has(names,clean(leg.from))&&has(names,clean(leg.to));
+ }));
 }
 
 /* ---------- How bad is a line? ----------
@@ -635,6 +652,7 @@ function legsFromJourney(j){
   const ids=[...new Set((l.routeOptions||[]).map(o=>o.lineIdentifier?.id).filter(Boolean))];
   return{from:clean(l.departurePoint?.commonName),to:clean(l.arrivalPoint?.commonName),
    lines:ids.length?ids:[l.mode?.id||"unknown"],either:ids.length>1,mode:l.mode?.id,
+   stops:(l.path?.stopPoints||[]).map(p=>clean(p.name)),
    naptan:l.departurePoint?.naptanId,dirs:[...new Set((l.routeOptions||[]).flatMap(o=>o.directions||[]).map(d=>clean(d).toLowerCase()).filter(Boolean))]};
  });
 }
@@ -664,16 +682,21 @@ async function check(){
  const statusOk=Object.values(byMode).flat().length>0;
  const js=jr.j||[];
  const tLegs=T.custom?legsFromJourney(js[0]):T.legs;
- const rel=relevance(T,tLegs);
- const st=id=>{
+ // How one line is doing on one leg.
+ const st=(id,leg)=>{
   const l=statusOk&&RAW[id];
   if(!l)return{state:"na",label:id==="bus"||id==="unknown"?"No live status":"Status unknown",reasons:[]};
   const s=lineState(l);
-  if(l.modeName==="national-rail"&&s.state==="bad"&&s.reasons.length&&!s.reasons.some(r=>rel.test(r))){s.state="warn";s.offRoute=true}
+  if(l.modeName==="national-rail"&&(s.state==="bad"||s.state==="warn")){
+   // A train company's problem that doesn't mention this leg is somewhere else on its network.
+   if(s.reasons.length&&!s.reasons.some(r=>relevance(leg).test(r))){s.state="good";s.offRoute=true}
+   // Still flagged as broken, but TfL's planner has trains on this bit: they're running, maybe with delays.
+   else if(s.state==="bad"&&plannerHasTrains(leg,id,js)){s.state="warn";s.running=true}
+  }
   return s;
  };
  const legs=tLegs.map(leg=>{
-  const per=leg.lines.map(id=>({id,...st(id)}));
+  const per=leg.lines.map(id=>({id,...st(id,leg)}));
   const known=per.filter(p=>p.state!=="na"),pool=known.length?known:per;
   const pick=leg.either?pool.reduce((a,b)=>RANK[b.state]<RANK[a.state]?b:a):pool.reduce((a,b)=>RANK[b.state]>RANK[a.state]?b:a);
   return{...leg,per,state:pick.state};
@@ -817,9 +840,11 @@ function renderRoute(T,legs,jErr){
  legs.forEach((leg,i)=>{
   html+=`<div class="stop"><i></i>${esc(leg.from)}</div>`;
   const main=leg.per.find(p=>p.state===leg.state)||leg.per[0];
-  const why=leg.per.filter(p=>p.state!=="good"&&p.state!=="na").map(p=>{
+  const why=leg.per.filter(p=>(p.state!=="good"&&p.state!=="na")||p.offRoute).map(p=>{
    const r=p.reasons[0]?p.reasons[0].replace(/^[^:]{0,40}:\s*/,""):p.label;
-   return `<p class="why"><b>${esc(lname(p.id))}:</b> ${richText(r,200)}${p.offRoute?" (doesn't look like it hits your stops)":""} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
+   const note=p.offRoute?` (that's elsewhere on ${esc(lname(p.id))}, not between ${esc(leg.from)} and ${esc(leg.to)})`
+    :p.running?` TfL's journey planner still has trains on this bit, so they look to be running.`:"";
+   return `<p class="why"><b>${esc(lname(p.id))}:</b> ${richText(r,200)}${note} <button type="button" class="morebtn" data-line="${esc(p.id)}">Details ›</button></p>`}).join("");
   const pill=p=>RAW[p.id]
    ?`<button type="button" class="pill pillbtn" data-line="${esc(p.id)}" style="${lsty(p.id)}" aria-label="${esc(lname(p.id))} status details">${esc(lname(p.id))} ›</button>`
    :`<span class="pill" style="${lsty(p.id)}">${esc(p.id==="bus"?"Bus":lname(p.id))}</span>`;
@@ -860,8 +885,19 @@ async function loadLive(T,legs){
  const boards=T.custom
   ?legs.filter(l=>LIVE_MODES.includes(l.mode)&&l.naptan).slice(0,3).map(l=>({line:l.lines[0],lines:l.lines,title:`${l.from} to ${l.to}`,naptan:l.naptan,dirs:l.dirs}))
   :T.boards;
- if(!boards.length){$("live").innerHTML=`<p class="empty">No live times for this journey. TfL only publishes live times for the Tube, Overground, Elizabeth line and DLR.</p>`;return}
- $("live").innerHTML=boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="${lsty(b.line)}">${esc(lname(b.line))}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("");
+ // TfL has no live times for train companies like c2c, so for those legs link to National Rail's
+ // live departure board instead. It's the same feed c2c's own website and station screens use.
+ const nrLegs=legs.filter(l=>l.lines.every(id=>RAW[id]?.modeName==="national-rail"||id==="c2c"));
+ const nrCards=nrLegs.map(l=>{
+  const id=l.lines.find(x=>RAW[x]?.modeName==="national-rail"||x==="c2c");
+  const from=crsForName(l.from),to=crsForName(l.to);
+  const url=from?`https://www.nationalrail.co.uk/live-trains/departures/${from}/${to?to+"/":""}`:"https://www.nationalrail.co.uk/live-trains/";
+  return `<div class="board"><h3><span class="pill" style="${lsty(id)}">${esc(lname(id))}</span>${esc(l.from)} to ${esc(l.to)}</h3>
+   <p class="empty">TfL doesn't publish live ${esc(lname(id))} times.</p>
+   <p><a class="ext" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Live departures from ${esc(l.from)} ↗</a></p></div>`;
+ }).join("");
+ if(!boards.length){$("live").innerHTML=nrCards||`<p class="empty">No live times for this journey. TfL only publishes live times for the Tube, Overground, Elizabeth line and DLR.</p>`;return}
+ $("live").innerHTML=boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="${lsty(b.line)}">${esc(lname(b.line))}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("")+nrCards;
  const cache={};
  await Promise.all(boards.map(async(b,i)=>{
   try{
