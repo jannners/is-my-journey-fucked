@@ -1,0 +1,37 @@
+# Opens the real page against live TfL data and records what it says.
+# Runs every weekday morning, and can be started by hand from the Actions tab.
+# Results (a summary plus screenshots) are saved to the "live-results" branch.
+name: Live check
+
+on:
+  schedule:
+    - cron: "40 6 * * 1-5"   # 06:40 UTC = 06:40 UK time in winter, 07:40 in summer
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install browser
+        run: |
+          npm i --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Run live check
+        run: node tests/live-check.mjs
+      - name: Save results to the live-results branch
+        run: |
+          cd results
+          git init -q -b live-results
+          git config user.name "live-check"
+          git config user.email "live-check@users.noreply.github.com"
+          git add .
+          git commit -qm "Live check $(TZ=Europe/London date '+%Y-%m-%d %H:%M')"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" live-results
