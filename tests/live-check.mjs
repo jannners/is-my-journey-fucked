@@ -50,7 +50,7 @@ for (const [name, hash] of VIEWS) {
   await page.screenshot({ path: path.join(OUT, slug + ".png"), fullPage: true });
   results.push({
     name, hash, finished,
-    question: await text("question"), answer: await text("answer"), sub: await text("sub"),
+    question: await text("question"), answer: await text("answer"), sub: await text("sub"), planB: await text("alt"),
     dirNote: await text("dirNote"), route: await text("route"), journeys: await text("journeys"),
     live: await text("live"), netsum: await text("netsum"), whatWentWrong: await text("debug"),
     errors, tfl, screenshot: slug + ".png",
@@ -73,7 +73,7 @@ fs.writeFileSync(path.join(OUT, "summary.json"), JSON.stringify({ checkedAt: ukN
 const md = [`# Live check, ${ukNow()} (UK time)`, "", "## What TfL says", "",
   ...lines.map(l => `- **${l.name}** (\`${l.id}\`): ` + l.statuses.map(s => `${s.description} [${s.severity}]${s.reason ? " — " + s.reason.replace(/\s+/g, " ") : ""}`).join("; ")),
   "", "## What the page says", "",
-  ...results.flatMap(r => [`### ${r.name}`, "", `**${r.answer}** — ${r.sub}`, "", `- Question: ${r.question}`, `- Note: ${r.dirNote}`,
+  ...results.flatMap(r => [`### ${r.name}`, "", `**${r.answer}** — ${r.sub}`, "", ...(r.planB ? [`> ${r.planB}`, ""] : []), `- Question: ${r.question}`, `- Note: ${r.dirNote}`,
     `- Finished loading: ${r.finished}`, `- Route: ${r.route.replace(/\n+/g, " / ")}`, `- Journeys: ${r.journeys.replace(/\n+/g, " / ")}`,
     `- Live: ${r.live.replace(/\n+/g, " / ")}`, `- Every line: ${r.netsum.replace(/\n+/g, " ")}`,
     `- Failed TfL requests: ${r.whatWentWrong || "none"}`, `- Page errors: ${r.errors.join(" | ") || "none"}`,

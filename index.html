@@ -423,7 +423,7 @@ const TRIPS={
   {from:"Upminster",to:"Ockendon",lines:["c2c"],near:OCKENDON_LINE,...RAINHAM_LINE}],
   boards:[
    {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
-   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,platform:/eastbound/i,dest:x=>/upminster/i.test(x)||/eastbound/i.test(x)}]}
+   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,platform:/eastbound/i,dest:x=>/upminster/i.test(x)}]}
 };
 // A train company's status covers its whole network, so it only counts against ONE LEG if it
 // mentions somewhere on that leg: its two ends, any stops in between, or its "near" words.
@@ -941,9 +941,11 @@ async function loadLive(T,legs){
     rows=mine.length?mine:a;mixed=!mine.length&&a.length>0;
    }else{
     const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
-    // Some trains have no destination yet ("Check Front of Train"), so the platform's direction decides.
+    // Right station, right platform direction, and right destination. Some trains have no destination
+    // yet ("Check Front of Train"); for those the platform direction alone decides.
     const dirOk=x=>!b.platform||!/bound/i.test(x.platformName||"")||b.platform.test(x.platformName);
-    rows=a.filter(x=>b.station.test(x.stationName||"")&&dirOk(x)&&(b.dest(x.destinationName||x.towards||"")||(b.platform&&b.platform.test(x.platformName||""))));
+    const known=x=>x.destinationName||(x.towards&&!/check front/i.test(x.towards));
+    rows=a.filter(x=>b.station.test(x.stationName||"")&&dirOk(x)&&(!known(x)||b.dest(x.destinationName||x.towards)));
    }
    rows=rows.sort((x,y)=>x.timeToStation-y.timeToStation).slice(0,5);
    const where=x=>x.destinationName?clean(x.destinationName):(!x.towards||/check front/i.test(x.towards)?"Check front of train":x.towards);
