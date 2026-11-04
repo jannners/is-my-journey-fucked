@@ -105,6 +105,8 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 /* ---------- Animated cartoon scenes under the verdict ---------- */
 .scene{width:100%;max-width:380px;margin-top:14px}
 .scene svg{width:100%;height:auto;display:block;overflow:visible}
+/* "Plan B" line under the verdict, when TfL has a way round the broken bit. */
+.alt{margin:10px 0 0;padding:8px 12px;border-left:4px solid var(--good);background:var(--panel);font-weight:700;max-width:46ch}
 .reroll{margin-top:6px;font-size:.8rem;color:var(--muted)}
 .sign{font:700 11px var(--font-mono);fill:var(--amber)}
 .sign.red{fill:#ff4d4d}
@@ -274,6 +276,7 @@ footer{color:var(--muted);font-size:.78rem}
     <p class="q" id="question">Is my journey fucked?</p>
     <p class="answer small pulse" id="answer">Checking</p>
     <p class="sub" id="sub">Asking TfL how bad it is…</p>
+    <p class="alt" id="alt" hidden></p>
     <div class="scene" id="scene" aria-hidden="false"></div>
     <button class="reroll" id="reroll" type="button">Say it another way</button>
   </section>
@@ -395,6 +398,9 @@ const labelOf=q=>{const c=crsOf(q);return c?c[1]:String(q||"").trim()};
    OCKENDON_LINE: the Upminster–Ockendon–Chafford Hundred–Grays branch your c2c leg runs on.
    C2C_MAIN: Barking to Upminster on the main line (only used when the District isn't running). */
 const OCKENDON_LINE=["ockendon","chafford","grays","upminster","ockendon line"];
+// The other way to Grays (Barking–Rainham–Purfleet–Grays). A notice about that branch only
+// counts against your c2c leg if it also names Ockendon or Chafford Hundred.
+const RAINHAM_LINE={other:["rainham","purfleet","via rainham"],core:["ockendon","chafford"]};
 const C2C_MAIN=["barking","upminster","main line","fenchurch"];
 /* TRIPS: the two hand-built commute directions.
    Each has:
@@ -405,19 +411,19 @@ const C2C_MAIN=["barking","upminster","main line","fenchurch"];
               the right station and the right direction from TfL's arrivals list. */
 const TRIPS={
  "to-woodgrange":{from:"Ockendon",to:"Woodgrange Park",legs:[
-  {from:"Ockendon",to:"Upminster",lines:["c2c"],near:OCKENDON_LINE},
+  {from:"Ockendon",to:"Upminster",lines:["c2c"],near:OCKENDON_LINE,...RAINHAM_LINE},
   {from:"Upminster",to:"Barking",lines:["district","c2c"],either:true,near:C2C_MAIN},
   {from:"Barking",to:"Woodgrange Park",lines:["suffragette"]}],
   boards:[
-   {line:"district",title:"Upminster to Barking",station:/upminster/i,dest:x=>!/upminster/i.test(x)},
+   {line:"district",title:"Upminster to Barking",station:/upminster/i,platform:/westbound/i,dest:x=>!/upminster/i.test(x)},
    {line:"suffragette",title:"Barking to Woodgrange Park",station:/^barking\b(?!.*riverside)/i,dest:x=>!/riverside|barking/i.test(x)}]},
  "to-ockendon":{from:"Woodgrange Park",to:"Ockendon",legs:[
   {from:"Woodgrange Park",to:"Barking",lines:["suffragette"]},
   {from:"Barking",to:"Upminster",lines:["district","c2c"],either:true,near:C2C_MAIN},
-  {from:"Upminster",to:"Ockendon",lines:["c2c"],near:OCKENDON_LINE}],
+  {from:"Upminster",to:"Ockendon",lines:["c2c"],near:OCKENDON_LINE,...RAINHAM_LINE}],
   boards:[
    {line:"suffragette",title:"Woodgrange Park to Barking",station:/woodgrange/i,dest:x=>/barking/i.test(x)},
-   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,dest:x=>/upminster/i.test(x)}]}
+   {line:"district",title:"Barking to Upminster",station:/^barking\b(?!.*riverside)/i,platform:/eastbound/i,dest:x=>/upminster/i.test(x)||/eastbound/i.test(x)}]}
 };
 // A train company's status covers its whole network, so it only counts against ONE LEG if it
 // mentions somewhere on that leg: its two ends, any stops in between, or its "near" words.
@@ -426,6 +432,14 @@ function relevance(leg){
  const words=new Set(["all lines","all routes","all c2c","whole","entire",...(leg.near||[])]);
  [leg.from,leg.to,...(leg.stops||[])].forEach(n=>{n=clean(n).replace(/^London\s+/i,"").toLowerCase();if(n.length>=4)words.add(n)});
  return new RegExp([...words].map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
+}
+// Does this status message affect this leg? It must mention the leg, and if it's about another
+// branch (leg.other) it must also name the leg's own stations (leg.core).
+const wordsRe=ws=>new RegExp(ws.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
+function affects(leg,text){
+ if(!relevance(leg).test(text))return false;
+ if(leg.other&&wordsRe(leg.other).test(text)&&!wordsRe(leg.core||[]).test(text))return false;
+ return true;
 }
 // Real-world check: does TfL's journey planner still have trains on this line over this leg?
 // If it does, the trains are running, whatever the headline status says.
@@ -445,14 +459,18 @@ function plannerHasTrains(leg,id,js){
    "na" means TfL has no status for it (buses, say), and it's ignored for the verdict. */
 const RANK={na:-1,good:0,warn:1,closed:2,bad:3};
 // TfL gives each status a number (statusSeverity). This sorts them into our four levels:
-//   10 Good Service, 18 No Issues, 19 Information .............. good
-//   20 Service Closed, 16 Not Running, 0 Special Service ...... closed
-//   9 Minor Delays, 7 Diverted, 8 Bus Service, 14 Change of Frequency, 17 Issues Reported ... warn
-//   everything else (Suspended, Part Suspended, Severe Delays, Part Closure…) ... bad
+//   10 Good Service, 18 No Issues, 19 Information, 12 Exit Only, 13 No Step Free Access ... good
+//   20 Service Closed (the normal overnight close) ......................................... closed
+//   0 Special Service, 7 Reduced Service, 9 Minor Delays, 14 Change of Frequency,
+//   15 Diverted, 17 Issues Reported ...................................................... warn
+//   1 Closed, 2 Suspended, 3 Part Suspended, 4 Planned Closure, 5 Part Closure,
+//   6 Severe Delays, 8 Bus Service, 11 Part Closed, 16 Not Running ......................... bad
+// Train companies like c2c use 0 "Special Service" whenever they have any notice out,
+// so it's treated as a warning, and then only on legs the notice mentions.
 function classify(sev){
- if(sev===10||sev===18||sev===19)return"good";
- if(sev===20||sev===16||sev===0)return"closed";
- if([9,7,8,14,17].includes(sev))return"warn";
+ if([10,18,19,12,13].includes(sev))return"good";
+ if(sev===20)return"closed";
+ if([0,7,9,14,15,17].includes(sev))return"warn";
  return"bad";
 }
 // Takes one TfL line and returns its worst status, a readable label and the reasons TfL gave.
@@ -689,7 +707,7 @@ async function check(){
   const s=lineState(l);
   if(l.modeName==="national-rail"&&(s.state==="bad"||s.state==="warn")){
    // A train company's problem that doesn't mention this leg is somewhere else on its network.
-   if(s.reasons.length&&!s.reasons.some(r=>relevance(leg).test(r))){s.state="good";s.offRoute=true}
+   if(s.reasons.length&&!s.reasons.some(r=>affects(leg,r))){s.state="good";s.offRoute=true}
    // Still flagged as broken, but TfL's planner has trains on this bit: they're running, maybe with delays.
    else if(s.state==="bad"&&plannerHasTrains(leg,id,js)){s.state="warn";s.running=true}
   }
@@ -809,6 +827,7 @@ function speak(){
  v.dataset.v=level==="none"?"yes":level==="dunno"?"closed":level;
  a.textContent=big;a.classList.remove("pulse");a.classList.toggle("small",big.length>4);
  $("sub").textContent=sub;
+ $("alt").textContent=verdictCtx.alt||"";$("alt").hidden=!verdictCtx.alt;
  $("scene").innerHTML=`<svg viewBox="0 0 360 140" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")()}</svg>`;
 }
 // Decides the overall level, checking in this order:
@@ -820,15 +839,28 @@ function speak(){
 //   no     – all good
 function renderVerdict(T,legs,journeys,noStatus,jErr){
  const names=l=>l.per.filter(p=>p.state===l.state).map(p=>lname(p.id)).join(" and ");
+ const list=ls=>[...new Set(ls.map(names))].join(" and ");
  const bad=legs.filter(l=>l.state==="bad"),warn=legs.filter(l=>l.state==="warn"),closed=legs.filter(l=>l.state==="closed");
  let level,ctx={};
  if(noStatus||(T.custom&&jErr)||(T.custom&&journeys.length&&!legs.length))level="dunno";
- else if(closed.length&&!bad.length){level="closed";ctx={line:closed.map(names).join(" and ")}}
- else if(bad.length){level="yes";ctx={line:bad.map(names).join(" and "),from:bad[0].from,to:bad[0].to}}
+ else if(closed.length&&!bad.length){level="closed";ctx={line:list(closed)}}
+ else if(bad.length){level="yes";ctx={line:list(bad),from:bad[0].from,to:bad[0].to}}
  else if(!journeys.length&&!jErr)level="none";
- else if(warn.length){level="bit";ctx={line:warn.map(names).join(" and ")}}
+ else if(warn.length){level="bit";ctx={line:list(warn)}}
  else level="no";
- verdictCtx={level,ctx};speak();
+ // Plan B: the first journey TfL suggests that avoids every broken line.
+ let alt="";
+ if(level==="yes"||level==="closed"){
+  const broken=new Set([...bad,...closed].flatMap(l=>l.per.filter(p=>p.state===l.state).map(p=>p.id)));
+  const j=journeys.find(j=>!(j.legs||[]).some(l=>(l.routeOptions||[]).some(o=>broken.has(o.lineIdentifier?.id))));
+  if(j){
+   const hm=x=>String(x||"").slice(11,16);
+   const via=[...new Set((j.legs||[]).filter(l=>l.mode?.id!=="walking").map(l=>{const id=l.routeOptions?.[0]?.lineIdentifier?.id;return l.mode?.id==="bus"?`bus ${l.routeOptions?.[0]?.name||""}`.trim():(id?lname(id):l.routeOptions?.[0]?.name||l.mode?.name)}))];
+   const walk=(j.legs||[]).filter(l=>l.mode?.id==="walking"&&l.duration>4).map(l=>l.duration);
+   alt=`Plan B: leave ${hm(j.startDateTime)}, arrive ${hm(j.arrivalDateTime)} on the ${via.join(", then ")}${walk.length?`, with a ${Math.max(...walk)}-minute walk`:""}.`;
+  }
+ }
+ verdictCtx={level,ctx,alt};speak();
 }
 
 /* ---------- Drawing each section ---------- */
@@ -909,12 +941,16 @@ async function loadLive(T,legs){
     rows=mine.length?mine:a;mixed=!mine.length&&a.length>0;
    }else{
     const a=await(cache[b.line]=cache[b.line]||get(`/Line/${b.line}/Arrivals`));
-    rows=a.filter(x=>b.station.test(x.stationName||"")&&b.dest(x.destinationName||x.towards||""));
+    // Some trains have no destination yet ("Check Front of Train"), so the platform's direction decides.
+    const dirOk=x=>!b.platform||!/bound/i.test(x.platformName||"")||b.platform.test(x.platformName);
+    rows=a.filter(x=>b.station.test(x.stationName||"")&&dirOk(x)&&(b.dest(x.destinationName||x.towards||"")||(b.platform&&b.platform.test(x.platformName||""))));
    }
    rows=rows.sort((x,y)=>x.timeToStation-y.timeToStation).slice(0,5);
-   $("lb"+i).innerHTML=rows.length?rows.map(x=>`<div class="row"><span>${esc(clean(x.destinationName||x.towards))}${x.platformName&&x.platformName!=="null"?` · ${esc(x.platformName)}`:""}</span><span class="m">${mins(x.timeToStation)}</span></div>`).join("")
+   const where=x=>x.destinationName?clean(x.destinationName):(!x.towards||/check front/i.test(x.towards)?"Check front of train":x.towards);
+   const st=RAW[b.line]&&lineState(RAW[b.line]);
+   $("lb"+i).innerHTML=rows.length?rows.map(x=>`<div class="row"><span>${esc(where(x))}${x.platformName&&x.platformName!=="null"?` · ${esc(x.platformName)}`:""}</span><span class="m">${mins(x.timeToStation)}</span></div>`).join("")
      +(mixed?`<p class="empty">Showing both directions. Check the destination.</p>`:"")
-    :`<p class="empty">No trains showing right now.</p>`;
+    :`<p class="empty">${st&&st.state==="bad"?`No trains: ${esc(lname(b.line))} has ${esc(st.label.toLowerCase())}.`:"No trains showing right now."}</p>`;
   }catch(e){$("lb"+i).innerHTML=`<p class="err">Couldn't load: ${esc(e.message)}</p>`}
  }));
 }
