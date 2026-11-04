@@ -498,8 +498,15 @@ function relevance(leg){
 // Does this status message affect this leg? It must mention the leg, and if it's about another
 // branch (leg.other) it must also name the leg's own stations (leg.core).
 const wordsRe=ws=>new RegExp(ws.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"i");
+// "via X" names a route; a notice about trains via Rainham isn't about a leg that doesn't go that way.
+const viaNames=t=>[...String(t).matchAll(/\bvia\s+([A-Z][\w'’-]*(?:\s+[A-Z][\w'’-]*)*)/g)].map(m=>norm(m[1]));
 function affects(leg,text){
  if(!relevance(leg).test(text))return false;
+ const vias=viaNames(text);
+ if(vias.length){
+  const mine=[leg.from,leg.to,...(leg.stops||[]),...(leg.near||[])].map(norm);
+  if(!vias.some(v=>mine.some(n=>n&&(n.includes(v)||v.includes(n)))))return false;
+ }
  if(leg.other&&wordsRe(leg.other).test(text)&&!wordsRe(leg.core||[]).test(text))return false;
  return true;
 }
@@ -558,7 +565,8 @@ async function loadSequences(ids){
 // Pulls every "between X and Y" out of a status message.
 function sections(text){
  const out=[],re=/between\s+(.+?)\s+and\s+(.+?)(?=\s+and\s+between\b|\s+and\s+[A-Z]{4,}|\s+(?:due|while|until|because|on|in|for|from|with|towards|via)\b|[.,;:(]|$)/g;
- let m;while((m=re.exec(text)))out.push([norm(m[1]),norm(m[2])]);
+ // "Epping/Hainault" means either end, so each name gets its own pair.
+ let m;while((m=re.exec(text)))for(const a of m[1].split("/"))for(const b of m[2].split("/"))out.push([norm(a),norm(b)]);
  return out;
 }
 const stopIndex=(route,name)=>{let i=route.indexOf(name);if(i<0)i=route.findIndex(r=>r.startsWith(name+" ")||name.startsWith(r+" "));return i};
