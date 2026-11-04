@@ -116,100 +116,100 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:
 /* "Plan B" line under the verdict, when TfL has a way round the broken bit. */
 .alt{margin:10px 0 0;padding:8px 12px;border-left:4px solid var(--good);background:var(--panel);font-weight:700;max-width:46ch}
 .reroll{margin-top:6px;font-size:.8rem;color:var(--muted)}
-.sign{font:700 11px var(--font-mono);fill:var(--amber)}
-.sign.red{fill:#ff4d4d}
-.huh{font:400 54px var(--font-display);fill:var(--fg)}
-.zzz{font:700 16px var(--font-mono);fill:var(--muted)}
-.sign.tiny{font-size:8px}
-.sign.green{fill:#3fcf7e}
-.cap{font:700 11px var(--font-mono);fill:var(--fg);letter-spacing:.08em}
-.boing{font:400 22px var(--font-display);fill:var(--bad);letter-spacing:.02em}
-.note{font:700 18px var(--font-body);fill:var(--fg)}
-.ball8{font:700 6.5px var(--font-mono);fill:#fff;letter-spacing:.04em}
+.scene .sign{font:700 11px var(--font-mono);fill:var(--amber)}
+.scene .sign.red{fill:#ff4d4d}
+.scene .huh{font:400 54px var(--font-display);fill:var(--fg)}
+.scene .zzz{font:700 16px var(--font-mono);fill:var(--muted)}
+.scene .sign.tiny{font-size:8px}
+.scene .sign.green{fill:#3fcf7e}
+.scene .cap{font:700 11px var(--font-mono);fill:var(--fg);letter-spacing:.08em}
+.scene .boing{font:400 22px var(--font-display);fill:var(--bad);letter-spacing:.02em}
+.scene .note{font:700 18px var(--font-body);fill:var(--fg)}
+.scene .ball8{font:700 6.5px var(--font-mono);fill:#fff;letter-spacing:.04em}
 /* All the animations live inside this block, so anyone who has turned on "reduce motion"
    on their device gets still pictures instead. Each class matches a bit of a scene in SCENES (in the script). */
 @media (prefers-reduced-motion:no-preference){
- .sleepers{animation:slide .5s linear infinite}
+ .scene .sleepers{animation:slide .5s linear infinite}
  @keyframes slide{to{stroke-dashoffset:-18}}
- .bob{animation:bob .35s ease-in-out infinite alternate}
+ .scene .bob{animation:bob .35s ease-in-out infinite alternate}
  @keyframes bob{to{transform:translateY(-2px)}}
- .puff{animation:puff 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
- .p2{animation-delay:-.6s}.p3{animation-delay:-1.2s}
+ .scene .puff{animation:puff 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ .scene .p2{animation-delay:-.6s}.scene .p3{animation-delay:-1.2s}
  @keyframes puff{0%{transform:translate(0,0) scale(.6);opacity:.8}100%{transform:translate(40px,-50px) scale(1.8);opacity:0}}
- .spin{animation:spin 12s linear infinite}
+ .scene .spin{animation:spin 12s linear infinite}
  @keyframes spin{to{transform:rotate(360deg)}}
- .cross{animation:cross 5s linear infinite}
+ .scene .cross{animation:cross 5s linear infinite}
  @keyframes cross{from{transform:translateX(-110px)}to{transform:translateX(380px)}}
- .crawl{animation:crawl 26s linear infinite}
+ .scene .crawl{animation:crawl 26s linear infinite}
  @keyframes crawl{from{transform:translateX(0)}to{transform:translateX(480px)}}
- .snail{animation:snail 9s linear infinite}
+ .scene .snail{animation:snail 9s linear infinite}
  @keyframes snail{from{transform:translate(-40px,128px)}to{transform:translate(380px,128px)}}
- .dots circle{animation:dot 1.2s ease-in-out infinite}
- .dots circle:nth-child(2){animation-delay:.2s}.dots circle:nth-child(3){animation-delay:.4s}
+ .scene .dots circle{animation:dot 1.2s ease-in-out infinite}
+ .scene .dots circle:nth-child(2){animation-delay:.2s}.scene .dots circle:nth-child(3){animation-delay:.4s}
  @keyframes dot{50%{opacity:.15}}
- .leafd{animation:fall 3.6s linear infinite;transform-box:fill-box;transform-origin:center}
+ .scene .leafd{animation:fall 3.6s linear infinite;transform-box:fill-box;transform-origin:center}
  @keyframes fall{from{transform:translate(0,0) rotate(0)}to{transform:translate(-30px,125px) rotate(300deg)}}
- .flame{animation:flick .4s ease-in-out infinite alternate}
+ .scene .flame{animation:flick .4s ease-in-out infinite alternate}
  @keyframes flick{from{transform:scaleY(.8) scaleX(1.05)}to{transform:scaleY(1.15) scaleX(.92)}}
- .smoke{animation:smoke 3s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ .scene .smoke{animation:smoke 3s ease-out infinite;transform-box:fill-box;transform-origin:center}
  @keyframes smoke{from{transform:translate(0,0) scale(.5);opacity:.7}to{transform:translate(20px,-60px) scale(1.6);opacity:0}}
  /* Wheel's come off: the wheel bounces away and a guard chases it. */
- .wheelaway{animation:wheelaway 3.6s cubic-bezier(.3,.6,.6,1) infinite}
+ .scene .wheelaway{animation:wheelaway 3.6s cubic-bezier(.3,.6,.6,1) infinite}
  @keyframes wheelaway{0%{transform:translate(194px,103px)}18%{transform:translate(232px,64px)}36%{transform:translate(266px,103px)}52%{transform:translate(292px,80px)}68%{transform:translate(318px,103px)}82%{transform:translate(340px,92px)}100%{transform:translate(400px,103px)}}
- .wheelspin{animation:spin .5s linear infinite;transform-box:fill-box;transform-origin:center}
- .chase{animation:chase 3.6s linear infinite}
+ .scene .wheelspin{animation:spin .5s linear infinite;transform-box:fill-box;transform-origin:center}
+ .scene .chase{animation:chase 3.6s linear infinite}
  @keyframes chase{from{transform:translateX(200px)}to{transform:translateX(370px)}}
- .lg1,.lg2{animation:leg .2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
- .lg2{animation-direction:alternate-reverse}
+ .scene .lg1,.scene .lg2{animation:leg .2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
+ .scene .lg2{animation-direction:alternate-reverse}
  @keyframes leg{from{transform:rotate(-30deg)}to{transform:rotate(30deg)}}
- .flail{animation:leg .16s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
- .boing{opacity:0;animation:boing 3.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+ .scene .flail{animation:leg .16s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
+ .scene .boing{opacity:0;animation:boing 3.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
  @keyframes boing{0%,12%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1.3)}30%{opacity:1;transform:scale(1)}48%,100%{opacity:0}}
  /* Rail replacement bus: juddering slowly across. */
- .busgo{animation:busgo 11s linear infinite}
+ .scene .busgo{animation:busgo 11s linear infinite}
  @keyframes busgo{from{transform:translateX(-170px)}to{transform:translateX(380px)}}
- .judder{animation:judder .24s steps(2) infinite}
+ .scene .judder{animation:judder .24s steps(2) infinite}
  @keyframes judder{50%{transform:translate(1px,-2px) rotate(-1deg)}}
  /* Platform people fidgeting, foot-tapping, and clocks. */
- .fidget{animation:fidget .45s ease-in-out infinite alternate}
- .fidget:nth-of-type(2n){animation-delay:-.2s}
+ .scene .fidget{animation:fidget .45s ease-in-out infinite alternate}
+ .scene .fidget:nth-of-type(2n){animation-delay:-.2s}
  @keyframes fidget{to{transform:translateY(-3px)}}
- .tap{animation:tap .3s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
+ .scene .tap{animation:tap .3s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:top center}
  @keyframes tap{to{transform:rotate(-24deg)}}
- .hand.fast{animation:spin 1.2s linear infinite}
- .hand.slow{animation:spin 9s linear infinite}
+ .scene .hand.fast{animation:spin 1.2s linear infinite}
+ .scene .hand.slow{animation:spin 9s linear infinite}
  /* Signal failure: sparks and a spanner. */
- .spark{animation:spark .5s steps(2) infinite}
+ .scene .spark{animation:spark .5s steps(2) infinite}
  @keyframes spark{50%{opacity:0}}
- .swing{animation:swing .45s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:right bottom}
+ .scene .swing{animation:swing .45s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:right bottom}
  @keyframes swing{from{transform:rotate(25deg)}to{transform:rotate(-30deg)}}
  /* Coffee steam, snow, music notes, dancing. */
- .steam{animation:steam 2s ease-out infinite}
+ .scene .steam{animation:steam 2s ease-out infinite}
  @keyframes steam{from{opacity:.9;transform:translateY(0)}to{opacity:0;transform:translateY(-12px)}}
- .snowf{animation:snowf 3.2s linear infinite}
+ .scene .snowf{animation:snowf 3.2s linear infinite}
  @keyframes snowf{from{transform:translate(0,-30px)}to{transform:translate(-16px,120px)}}
- .note{animation:note 2.4s ease-out infinite}
+ .scene .note{animation:note 2.4s ease-out infinite}
  @keyframes note{from{opacity:0;transform:translate(0,0)}25%{opacity:1}to{opacity:0;transform:translate(16px,-42px)}}
- .dance{animation:dance .42s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
+ .scene .dance{animation:dance .42s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom center}
  @keyframes dance{from{transform:rotate(-9deg)}to{transform:rotate(9deg) translateY(-7px)}}
  /* Fox in the bin, and the Magic 8-Ball. */
- .peek{animation:peek 3.2s ease-in-out infinite}
+ .scene .peek{animation:peek 3.2s ease-in-out infinite}
  @keyframes peek{0%,18%,86%,100%{transform:translateY(26px)}34%,72%{transform:translateY(0)}}
- .lid{animation:lid 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:left bottom}
+ .scene .lid{animation:lid 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:left bottom}
  @keyframes lid{0%,18%,86%,100%{transform:rotate(0)}34%,72%{transform:rotate(-40deg)}}
- .shake{animation:shake 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+ .scene .shake{animation:shake 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
  @keyframes shake{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(-14deg) translateX(-6px)}20%{transform:rotate(12deg) translateX(6px)}30%{transform:rotate(-8deg)}40%{transform:rotate(5deg)}}
- .blink{animation:blink 1s steps(2) infinite}
+ .scene .blink{animation:blink 1s steps(2) infinite}
  @keyframes blink{to{opacity:.2}}
- .twinkle{animation:blink 1.6s ease-in-out infinite}
- .zzz{animation:zz 2.4s ease-out infinite}
- .z2{animation-delay:.6s}.z3{animation-delay:1.2s}
+ .scene .twinkle{animation:blink 1.6s ease-in-out infinite}
+ .scene .zzz{animation:zz 2.4s ease-out infinite}
+ .scene .z2{animation-delay:.6s}.scene .z3{animation-delay:1.2s}
  @keyframes zz{from{opacity:0;transform:translateY(8px)}30%{opacity:1}to{opacity:0;transform:translateY(-18px)}}
- .huh{animation:huh 1.2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom}
+ .scene .huh{animation:huh 1.2s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:bottom}
  @keyframes huh{to{transform:translateY(-8px) rotate(8deg)}}
 }
 /* With reduced motion, park the moving things somewhere sensible in the middle of the scene. */
-@media (prefers-reduced-motion:reduce){.wheelaway{transform:translate(266px,103px)}.chase{transform:translateX(250px)}.busgo{transform:translateX(100px)}.peek{transform:translateY(0)}.lid{transform:rotate(-40deg)}.snail{transform:translate(200px,128px)}.crawl{transform:translateX(230px)}.cross{transform:translateX(130px)}}
+@media (prefers-reduced-motion:reduce){.scene .wheelaway{transform:translate(266px,103px)}.scene .chase{transform:translateX(250px)}.scene .busgo{transform:translateX(100px)}.scene .peek{transform:translateY(0)}.scene .lid{transform:rotate(-40deg)}.scene .snail{transform:translate(200px,128px)}.scene .crawl{transform:translateX(230px)}.scene .cross{transform:translateX(130px)}}
 
 /* ---------- Section headings ---------- */
 h2{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
@@ -292,6 +292,8 @@ a.ext{color:var(--fg);font-weight:800;text-decoration:underline;text-underline-o
 .poplinks{display:flex;flex-wrap:wrap;gap:8px 16px;border-top:1px solid var(--line);padding-top:12px}
 details.more>summary{cursor:pointer;font-weight:700;font-size:.9rem;margin-bottom:8px}
 /* ---------- "What went wrong" box: lists any TfL requests that failed ---------- */
+footer .linkbtn{border:0;background:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.dsum{cursor:pointer;font-size:.82rem;color:var(--muted)}
 .debug{font:.75rem var(--font-mono);color:var(--muted);white-space:pre-wrap;word-break:break-word}
 footer{color:var(--muted);font-size:.78rem}
 /* The gentle pulsing on "Checking…" while TfL is being asked. */
@@ -359,7 +361,7 @@ footer{color:var(--muted);font-size:.78rem}
     <form class="nrform" id="nrForm" hidden autocomplete="off">
       <label for="nrKeyInput">National Rail key<input id="nrKeyInput" type="password" placeholder="Paste your Consumer key"></label>
       <div class="pk-actions"><button type="submit" class="go">Save key</button><button type="button" id="nrRemove">Remove key</button><button type="button" id="nrCancel">Cancel</button></div>
-      <p class="pk-hint">It's free: sign up at <a class="ext" href="https://raildata.org.uk/" target="_blank" rel="noopener noreferrer">Rail Data Marketplace ↗</a>, subscribe to the "Live Departure Board" data product, then copy its Consumer key. The key is saved only in this browser and never goes into the site's code.</p>
+      <p class="pk-hint">For live c2c times. Saved only on this device.</p>
     </form>
   </section>
 
@@ -377,9 +379,9 @@ footer{color:var(--muted);font-size:.78rem}
   </dialog>
 
   <!-- Only appears if a TfL request failed, listing which ones. Handy when something breaks. -->
-  <details id="debugBox" hidden><summary class="note">What went wrong</summary><div class="debug" id="debug"></div></details>
+  <details id="debugBox" hidden><summary class="dsum">What went wrong</summary><div class="debug" id="debug"></div></details>
 
-  <footer>Line status, journeys and live Tube, Overground, Elizabeth line and DLR times from TfL Open Data. Train-company times come from TfL's timetable unless you add a free National Rail key for live times. Station codes from the uk-railway-stations dataset (ODbL). Updates every minute.</footer>
+  <footer><button type="button" class="linkbtn" data-nrkey>Settings</button> · Powered by TfL Open Data and National Rail Enquiries. Station codes from uk-railway-stations (ODbL).</footer>
 </div>
 
 <script>
@@ -929,7 +931,7 @@ async function check(){
  renderVerdict(T,legs,js,!statusOk,jr.e);
  renderNetwork(byMode);
  loadLive(T,legs);
- $("debugBox").hidden=!failures.length;
+ $("debugBox").hidden=!failures.length||!/[?&]debug\b/.test(location.search);
  $("debug").textContent=failures.join("\n");
  $("updated").textContent="Checked "+ukTime(new Date());
  running=false;
@@ -1213,7 +1215,7 @@ async function loadLive(T,legs){
   const link=`<p><a class="ext" href="${esc(url)}" target="_blank" rel="noopener noreferrer">National Rail live departures ↗</a></p>`;
   const live=from&&NRLIVE[from+">"+(to||"")];
   let body;
-  if(!nrKey())body=`<p class="empty">TfL doesn't publish live ${esc(lname(id))} times. <button type="button" class="morebtn" data-nrkey>Add a free National Rail key</button> to see them here.</p>`;
+  if(!nrKey())body="";
   else if(live?.error==="key")body=`<p class="err">National Rail didn't accept your key. <button type="button" class="morebtn" data-nrkey>Change key</button></p>`;
   else if(live?.error)body=`<p class="err">${esc(live.error)}.</p>`;
   else if(live?.data){
@@ -1228,7 +1230,7 @@ async function loadLive(T,legs){
   }else body=`<p class="empty">No live times for this station.</p>`;
   return `<div class="board"><h3><span class="pill" style="${lsty(id)}">${esc(lname(id))}</span>${esc(l.from)} to ${esc(l.to)}${nrKey()&&live?.data?` <small class="livetag">Live</small>`:""}</h3>${body}${link}</div>`;
  }).join("");
- if(!boards.length){$("live").innerHTML=nrCards||`<p class="empty">No live times for this journey. TfL only publishes live times for the Tube, Overground, Elizabeth line and DLR.</p>`;return}
+ if(!boards.length){$("live").innerHTML=nrCards||`<p class="empty">No live times for this journey.</p>`;return}
  $("live").innerHTML=boards.map((b,i)=>`<div class="board"><h3><span class="pill" style="${lsty(b.line)}">${esc(lname(b.line))}</span>${esc(b.title)}</h3><div id="lb${i}"><p class="empty">Loading…</p></div></div>`).join("")+nrCards;
  const cache={};
  await Promise.all(boards.map(async(b,i)=>{
