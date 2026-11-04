@@ -1093,7 +1093,10 @@ function speak(){
  if(!verdictCtx)return;
  const {level,ctx}=verdictCtx,pool=SAY[level];
  const big=pickFrom(pool.big,level+"b");
- const sub=pickFrom(pool.sub,level+"s").replace(/\{(\w+)\}/g,(_,k)=>ctx[k]||"");
+ let sub=pickFrom(pool.sub,level+"s").replace(/\{(\w+)\}/g,(_,k)=>ctx[k]||"");
+ // Two or more lines ("District and Central") need "are/have" rather than "is/has".
+ if(ctx.line&&/ and /.test(ctx.line)){const L=ctx.line.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  sub=sub.replace(new RegExp(`(${L}) (is|has|isn't)\\b`),(_,n,v)=>`${n} ${{is:"are",has:"have","isn't":"aren't"}[v]}`)}
  const v=$("verdict"),a=$("answer");
  v.dataset.v=level==="none"?"yes":level==="dunno"?"closed":level;
  a.textContent=big;a.classList.remove("pulse");a.classList.toggle("small",big.length>4);
