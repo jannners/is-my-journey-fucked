@@ -1,0 +1,148 @@
+{
+  "checkedAt": "6 Nov 2026, 14:43",
+  "status": [
+    {
+      "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+      "id": "district",
+      "name": "District",
+      "modeName": "tube",
+      "disruptions": [],
+      "created": "2026-09-22T09:53:41.037Z",
+      "modified": "2026-09-22T09:53:41.037Z",
+      "lineStatuses": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+          "id": 0,
+          "lineId": "district",
+          "statusSeverity": 9,
+          "statusSeverityDescription": "Minor Delays",
+          "reason": "District Line: Minor delays between Wimbledon and Edgware Road while we fix a signal failure at  Southfields. GOOD SERVICE on the rest of the line. ",
+          "created": "0001-01-01T00:00:00",
+          "validityPeriods": [
+            {
+              "$type": "Tfl.Api.Presentation.Entities.ValidityPeriod, Tfl.Api.Presentation.Entities",
+              "fromDate": "2026-11-06T14:39:46Z",
+              "toDate": "2026-11-07T01:29:00Z",
+              "isNow": true
+            }
+          ],
+          "disruption": {
+            "$type": "Tfl.Api.Presentation.Entities.Disruption, Tfl.Api.Presentation.Entities",
+            "category": "RealTime",
+            "categoryDescription": "RealTime",
+            "description": "District Line: Minor delays between Wimbledon and Edgware Road while we fix a signal failure at  Southfields. GOOD SERVICE on the rest of the line. ",
+            "affectedRoutes": [],
+            "affectedStops": []
+          }
+        }
+      ],
+      "routeSections": [],
+      "serviceTypes": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+          "name": "Regular",
+          "uri": "/Line/Route?ids=District&serviceTypes=Regular"
+        }
+      ],
+      "crowding": {
+        "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+      }
+    },
+    {
+      "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+      "id": "suffragette",
+      "name": "Suffragette",
+      "modeName": "overground",
+      "disruptions": [],
+      "created": "2026-09-22T09:53:41.037Z",
+      "modified": "2026-09-22T09:53:41.037Z",
+      "lineStatuses": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+          "id": 0,
+          "lineId": "suffragette",
+          "statusSeverity": 5,
+          "statusSeverityDescription": "Part Closure",
+          "reason": "Suffragette Line: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Trains will operate every thirty minutes in either direction departing Gospel Oak at xx:09 and xx:39 and departing South Tottenham at xx:13 and xx:43. London Underground and London Buses are accepting tickets via any reasonable routes.",
+          "created": "0001-01-01T00:00:00",
+          "validityPeriods": [
+            {
+              "$type": "Tfl.Api.Presentation.Entities.ValidityPeriod, Tfl.Api.Presentation.Entities",
+              "fromDate": "2026-11-01T09:45:00Z",
+              "toDate": "2026-11-11T01:29:00Z",
+              "isNow": false
+            }
+          ],
+          "disruption": {
+            "$type": "Tfl.Api.Presentation.Entities.Disruption, Tfl.Api.Presentation.Entities",
+            "category": "PlannedWork",
+            "categoryDescription": "PlannedWork",
+            "description": "Suffragette Line: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Trains will operate every thirty minutes in either direction departing Gospel Oak at xx:09 and xx:39 and departing South Tottenham at xx:13 and xx:43. London Underground and London Buses are accepting tickets via any reasonable routes.",
+            "created": "2026-10-27T09:56:00Z",
+            "affectedRoutes": [],
+            "affectedStops": []
+          }
+        }
+      ],
+      "routeSections": [],
+      "serviceTypes": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+          "name": "Regular",
+          "uri": "/Line/Route?ids=Suffragette&serviceTypes=Regular"
+        }
+      ],
+      "crowding": {
+        "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+      }
+    }
+  ],
+  "c2c": {
+    "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+    "id": "c2c",
+    "name": "c2c",
+    "modeName": "national-rail",
+    "disruptions": [],
+    "created": "2026-09-22T09:53:41.037Z",
+    "modified": "2026-09-22T09:53:41.037Z",
+    "lineStatuses": [
+      {
+        "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+        "id": 0,
+        "lineId": "c2c",
+        "statusSeverity": 0,
+        "statusSeverityDescription": "Special Service",
+        "reason": "https://www.nationalrail.co.uk/service-disruptions/barking-20261023/",
+        "created": "0001-01-01T00:00:00",
+        "validityPeriods": [
+          {
+            "$type": "Tfl.Api.Presentation.Entities.ValidityPeriod, Tfl.Api.Presentation.Entities",
+            "fromDate": "2026-11-06T00:00:03Z",
+            "toDate": "2026-11-06T23:59:59Z",
+            "isNow": false
+          }
+        ],
+        "disruption": {
+          "$type": "Tfl.Api.Presentation.Entities.Disruption, Tfl.Api.Presentation.Entities",
+          "category": "Information",
+          "categoryDescription": "Information",
+          "description": "https://www.nationalrail.co.uk/service-disruptions/barking-20261023/",
+          "additionalInfo": "Custom",
+          "affectedRoutes": [],
+          "affectedStops": []
+        }
+      }
+    ],
+    "routeSections": [],
+    "serviceTypes": [
+      {
+        "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+        "name": "Regular",
+        "uri": "/Line/Route?ids=c2c&serviceTypes=Regular"
+      }
+    ],
+    "crowding": {
+      "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+    }
+  }
+}

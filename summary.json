@@ -1,0 +1,143 @@
+{
+  "checkedAt": "6 Nov 2026, 14:43",
+  "lines": [
+    {
+      "id": "district",
+      "name": "District",
+      "statuses": [
+        {
+          "severity": 9,
+          "description": "Minor Delays",
+          "reason": "District Line: Minor delays between Wimbledon and Edgware Road while we fix a signal failure at  Southfields. GOOD SERVICE on the rest of the line. "
+        }
+      ]
+    },
+    {
+      "id": "suffragette",
+      "name": "Suffragette",
+      "statuses": [
+        {
+          "severity": 5,
+          "description": "Part Closure",
+          "reason": "Suffragette Line: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Trains will operate every thirty minutes in either direction departing Gospel Oak at xx:09 and xx:39 and departing South Tottenham at xx:13 and xx:43. London Underground and London Buses are accepting tickets via any reasonable routes."
+        }
+      ]
+    },
+    {
+      "id": "c2c",
+      "name": "c2c",
+      "statuses": [
+        {
+          "severity": 0,
+          "description": "Special Service",
+          "reason": "https://www.nationalrail.co.uk/service-disruptions/barking-20261023/"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "auto (time of day)",
+      "hash": "",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "FUCKED",
+      "sub": "Bollocksed. Suffragette isn't getting you from Woodgrange Park to Barking any time soon.",
+      "planB": "Plan B: leave 15:12, arrive 16:10 on the Elizabeth line, then Jubilee, then c2c, with an 11-minute walk.",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nFucked\n\nSuffragette: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Train… Details ›\n\nBarking\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nOckendon",
+      "journeys": "15:12\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:10\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n15:42\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:40\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n16:00\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:55\n55 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\n\nNo trains: Suffragette has part closure.\n\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n3 with delays\n1 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "auto-time-of-day-.png"
+    },
+    {
+      "name": "to Woodgrange Park",
+      "hash": "#to-woodgrange",
+      "finished": true,
+      "question": "IS MY JOURNEY TO WOODGRANGE PARK FUCKED?",
+      "answer": "UTTERLY",
+      "sub": "Absolutely fucked. Suffragette has given up between Barking and Woodgrange Park.",
+      "planB": "Plan B: leave 14:46, arrive 15:44 on the c2c, then Jubilee, then Elizabeth line, with an 11-minute walk.",
+      "dirNote": "You picked this direction",
+      "route": "Ockendon\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nBarking\nSuffragette ›\nFucked\n\nSuffragette: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Train… Details ›\n\nWoodgrange Park",
+      "journeys": "14:46\nc2c\n›\nJubilee\n›\nElizabeth line\n›\nwalk 11m\narr 15:44\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n14:55\nc2c\n›\nJubilee\n›\nElizabeth line\n›\nwalk 11m\narr 15:52\n57 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n15:24\nc2c\n›\nJubilee\n›\nElizabeth line\n›\nwalk 11m\narr 16:22\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›",
+      "live": "Suffragette\nBarking to Woodgrange Park\n\nNo trains: Suffragette has part closure.\n\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n3 with delays\n1 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GWDGRNPK?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-woodgrange-park.png"
+    },
+    {
+      "name": "to Ockendon",
+      "hash": "#to-ockendon",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "YES",
+      "sub": "Well and truly fucked. Suffragette between Woodgrange Park and Barking has packed it in. Pub?",
+      "planB": "Plan B: leave 15:12, arrive 16:10 on the Elizabeth line, then Jubilee, then c2c, with an 11-minute walk.",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nFucked\n\nSuffragette: No service between South Tottenham and Barking Riverside, until the end of service on Tuesday 10 November, due to a operational incident. A reduced service is operating on the rest of the line. Train… Details ›\n\nBarking\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nOckendon",
+      "journeys": "15:12\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:10\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n15:42\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:40\n58 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›\n\n16:00\nwalk 11m\n›\nElizabeth line\n›\nJubilee\n›\nc2c\narr 16:55\n55 min\n\nMANOR PARK STATION: Please travel in the front 7 coaches if alighting at this station (customers with buggies should travel in the front fo… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\n\nNo trains: Suffragette has part closure.\n\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n3 with delays\n1 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-ockendon.png"
+    },
+    {
+      "name": "Elsewhere: OCK to LST",
+      "hash": "#go/OCK/LST",
+      "finished": true,
+      "question": "IS MY JOURNEY TO LONDON LIVERPOOL STREET FUCKED?",
+      "answer": "SLIGHTLY",
+      "sub": "Partially fucked. District is wheezing along. Get a coffee first.",
+      "planB": "",
+      "dirNote": "Ockendon to London Liverpool Street · Reverse it · Back to my commute",
+      "route": "Ockendon\nc2c ›\nRunning fine\n\nc2c: Until Tuesday 10 November, no service between Barking and Grays via Rainham due to emergency engineering works. Use local London Buses services for Dagenham Dock. A replacement bus service operates b… (that's elsewhere on c2c, not between Ockendon and West Ham) Details ›\n\nWest Ham\nDistrict ›\nDelays\n\nDistrict: Minor delays between Wimbledon and Edgware Road while we fix a signal failure at Southfields. GOOD SERVICE on the rest of the line. Details ›\n\nMile End\nCentral ›\nRunning fine\nLiverpool Street",
+      "journeys": "14:46\nc2c\n›\nDistrict\n›\nCentral\narr 15:24\n38 min\n14:55\nc2c\n›\nDistrict\n›\nCentral\narr 15:34\n39 min\n15:24\nc2c\n›\nDistrict\n›\nCentral\narr 16:04\n40 min\n\nc2c: Until Tuesday 10 November, no service between Barking and Grays via Rainham due to emergency engineering works. Use local London Buses… Details ›",
+      "live": "District\nWest Ham to Mile End\nEaling Broadway · Westbound - Platform 1\n4 min\nRichmond · Westbound - Platform 1\n5 min\nEaling Broadway · Westbound - Platform 1\n9 min\nCentral\nMile End to Liverpool Street\nWest Ruislip · Westbound - Platform 1\n3 min\nNorth Acton · Westbound - Platform 1\n5 min\nWest Ruislip · Westbound - Platform 1\n8 min\nEaling Broadway · Westbound - Platform 1\n13 min\nNorth Acton · Westbound - Platform 1\n15 min\nc2c\nOckendon to West Ham\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n3 with delays\n1 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/London%20Liverpool%20Street?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GLIVST?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/district/Route/Sequence/all",
+        "200 /StopPoint/940GZZLULVT/Arrivals",
+        "200 /StopPoint/940GZZLUWHM/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals"
+      ],
+      "screenshot": "elsewhere-ock-to-lst.png"
+    }
+  ]
+}
