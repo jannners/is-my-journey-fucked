@@ -1,0 +1,129 @@
+{
+  "checkedAt": "13 Nov 2026, 14:53",
+  "status": [
+    {
+      "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+      "id": "district",
+      "name": "District",
+      "modeName": "tube",
+      "disruptions": [],
+      "created": "2026-09-22T09:53:41.037Z",
+      "modified": "2026-09-22T09:53:41.037Z",
+      "lineStatuses": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+          "id": 0,
+          "lineId": "district",
+          "statusSeverity": 9,
+          "statusSeverityDescription": "Minor Delays",
+          "reason": "District Line: Minor delays between Turnham Green and Richmond due to train cancellations. GOOD SERVICE on the rest of the line.  ",
+          "created": "0001-01-01T00:00:00",
+          "validityPeriods": [
+            {
+              "$type": "Tfl.Api.Presentation.Entities.ValidityPeriod, Tfl.Api.Presentation.Entities",
+              "fromDate": "2026-11-13T14:24:28Z",
+              "toDate": "2026-11-14T01:29:00Z",
+              "isNow": true
+            }
+          ],
+          "disruption": {
+            "$type": "Tfl.Api.Presentation.Entities.Disruption, Tfl.Api.Presentation.Entities",
+            "category": "RealTime",
+            "categoryDescription": "RealTime",
+            "description": "District Line: Minor delays between Turnham Green and Richmond due to train cancellations. GOOD SERVICE on the rest of the line.  ",
+            "affectedRoutes": [],
+            "affectedStops": []
+          }
+        }
+      ],
+      "routeSections": [],
+      "serviceTypes": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+          "name": "Regular",
+          "uri": "/Line/Route?ids=District&serviceTypes=Regular"
+        }
+      ],
+      "crowding": {
+        "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+      }
+    },
+    {
+      "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+      "id": "suffragette",
+      "name": "Suffragette",
+      "modeName": "overground",
+      "disruptions": [],
+      "created": "2026-09-22T09:53:41.037Z",
+      "modified": "2026-09-22T09:53:41.037Z",
+      "lineStatuses": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+          "id": 0,
+          "lineId": "suffragette",
+          "statusSeverity": 3,
+          "statusSeverityDescription": "Part Suspended",
+          "reason": "Suffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. ",
+          "created": "0001-01-01T00:00:00",
+          "validityPeriods": [
+            {
+              "$type": "Tfl.Api.Presentation.Entities.ValidityPeriod, Tfl.Api.Presentation.Entities",
+              "fromDate": "2026-11-13T07:48:42Z",
+              "toDate": "2026-11-13T17:52:20Z",
+              "isNow": true
+            }
+          ],
+          "disruption": {
+            "$type": "Tfl.Api.Presentation.Entities.Disruption, Tfl.Api.Presentation.Entities",
+            "category": "RealTime",
+            "categoryDescription": "RealTime",
+            "description": "Suffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. ",
+            "affectedRoutes": [],
+            "affectedStops": []
+          }
+        }
+      ],
+      "routeSections": [],
+      "serviceTypes": [
+        {
+          "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+          "name": "Regular",
+          "uri": "/Line/Route?ids=Suffragette&serviceTypes=Regular"
+        }
+      ],
+      "crowding": {
+        "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+      }
+    }
+  ],
+  "c2c": {
+    "$type": "Tfl.Api.Presentation.Entities.Line, Tfl.Api.Presentation.Entities",
+    "id": "c2c",
+    "name": "c2c",
+    "modeName": "national-rail",
+    "disruptions": [],
+    "created": "2026-09-22T09:53:41.037Z",
+    "modified": "2026-09-22T09:53:41.037Z",
+    "lineStatuses": [
+      {
+        "$type": "Tfl.Api.Presentation.Entities.LineStatus, Tfl.Api.Presentation.Entities",
+        "id": 0,
+        "statusSeverity": 10,
+        "statusSeverityDescription": "Good Service",
+        "created": "0001-01-01T00:00:00",
+        "validityPeriods": []
+      }
+    ],
+    "routeSections": [],
+    "serviceTypes": [
+      {
+        "$type": "Tfl.Api.Presentation.Entities.LineServiceTypeInfo, Tfl.Api.Presentation.Entities",
+        "name": "Regular",
+        "uri": "/Line/Route?ids=c2c&serviceTypes=Regular"
+      }
+    ],
+    "crowding": {
+      "$type": "Tfl.Api.Presentation.Entities.Crowding, Tfl.Api.Presentation.Entities"
+    }
+  }
+}

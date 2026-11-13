@@ -1,0 +1,143 @@
+{
+  "checkedAt": "13 Nov 2026, 14:53",
+  "lines": [
+    {
+      "id": "district",
+      "name": "District",
+      "statuses": [
+        {
+          "severity": 9,
+          "description": "Minor Delays",
+          "reason": "District Line: Minor delays between Turnham Green and Richmond due to train cancellations. GOOD SERVICE on the rest of the line.  "
+        }
+      ]
+    },
+    {
+      "id": "suffragette",
+      "name": "Suffragette",
+      "statuses": [
+        {
+          "severity": 3,
+          "description": "Part Suspended",
+          "reason": "Suffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. "
+        }
+      ]
+    },
+    {
+      "id": "c2c",
+      "name": "c2c",
+      "statuses": [
+        {
+          "severity": 10,
+          "description": "Good Service",
+          "reason": ""
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "auto (time of day)",
+      "hash": "",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NO",
+      "sub": "Fuck-free zone. All your lines are running.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\n\nSuffragette: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. (the part suspended is on another part of the line, not between Woodgrange Park and Barking) Details ›\n\nBarking\nc2c ›\nRunning fine\nOckendon",
+      "journeys": "15:08\nSuffragette\n›\nc2c\narr 15:35\n27 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n15:24\nSuffragette\n›\nc2c\narr 16:10\n46 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n16:08\nSuffragette\n›\nc2c\narr 16:40\n32 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\n1 min\nBarking · Platform 2\n16 min\nBarking · Platform 2\n32 min\nBarking Riverside · Platform Unknown\n46 min\nBarking · Platform Unknown\n61 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "15 good\n2 with delays\n3 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "auto-time-of-day-.png"
+    },
+    {
+      "name": "to Woodgrange Park",
+      "hash": "#to-woodgrange",
+      "finished": true,
+      "question": "IS MY JOURNEY TO WOODGRANGE PARK FUCKED?",
+      "answer": "NAH",
+      "sub": "Unfucked. Miracles do happen. Go.",
+      "planB": "",
+      "dirNote": "You picked this direction",
+      "route": "Ockendon\nc2c ›\nRunning fine\nBarking\nSuffragette ›\nRunning fine\n\nSuffragette: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. (the part suspended is on another part of the line, not between Barking and Woodgrange Park) Details ›\n\nWoodgrange Park",
+      "journeys": "14:57\nc2c\n›\nSuffragette\narr 15:44\n47 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n15:24\nc2c\n›\nSuffragette\narr 15:57\n33 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n15:58\nc2c\n›\nSuffragette\narr 16:27\n29 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›",
+      "live": "Suffragette\nBarking to Woodgrange Park\nGospel Oak · Platform 8\n33 min\nGospel Oak · Platform 8\n78 min\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "15 good\n2 with delays\n3 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GWDGRNPK?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-woodgrange-park.png"
+    },
+    {
+      "name": "to Ockendon",
+      "hash": "#to-ockendon",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NOPE",
+      "sub": "Not fucked. Write it in your diary, this doesn't happen often.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\n\nSuffragette: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of the line. (the part suspended is on another part of the line, not between Woodgrange Park and Barking) Details ›\n\nBarking\nc2c ›\nRunning fine\nOckendon",
+      "journeys": "15:08\nSuffragette\n›\nc2c\narr 15:35\n27 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n15:24\nSuffragette\n›\nc2c\narr 16:10\n46 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›\n\n16:08\nSuffragette\n›\nc2c\narr 16:40\n32 min\n\nSuffragette Line: No service between Barking and Barking Riverside while we fix a points failure at Barking. GOOD SERVICE on the rest of th… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\nDue\nBarking · Platform 2\n16 min\nBarking · Platform 2\n32 min\nBarking Riverside · Platform Unknown\n46 min\nBarking · Platform Unknown\n61 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "15 good\n2 with delays\n3 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Route/Sequence/all",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-ockendon.png"
+    },
+    {
+      "name": "Elsewhere: OCK to LST",
+      "hash": "#go/OCK/LST",
+      "finished": true,
+      "question": "IS MY JOURNEY TO LONDON LIVERPOOL STREET FUCKED?",
+      "answer": "SLIGHTLY",
+      "sub": "Slightly fucked. Central is crawling along. Text ahead.",
+      "planB": "",
+      "dirNote": "Ockendon to London Liverpool Street · Reverse it · Back to my commute",
+      "route": "Ockendon\nc2c ›\nRunning fine\nBarking\nDistrict ›\nRunning fine\n\nDistrict: Minor delays between Turnham Green and Richmond due to train cancellations. GOOD SERVICE on the rest of the line. (the minor delays are on another part of the line, not between Barking and Mile End) Details ›\n\nMile End\nCentral ›\nDelays\n\nCentral: Minor delays due to train cancellations. Details ›\n\nLiverpool Street",
+      "journeys": "14:57\nc2c\n›\nDistrict\n›\nCentral\narr 15:39\n42 min\n\nCentral Line: Minor delays due to train cancellations. Details ›\n\n15:24\nc2c\n›\nDistrict\n›\nCentral\narr 16:04\n40 min\n\nCentral Line: Minor delays due to train cancellations. Details ›\n\n15:58\nc2c\n›\nDistrict\n›\nCentral\narr 16:39\n41 min\n\nCentral Line: Minor delays due to train cancellations. Details ›",
+      "live": "District\nBarking to Mile End\nCheck front of train · Westbound - Platform 3\n2 min\nBarking · Eastbound - Platform 2\n5 min\nCentral\nMile End to Liverpool Street\nNorth Acton · Westbound - Platform 1\nDue\nNorth Acton · Westbound - Platform 1\n4 min\nWhite City · Westbound - Platform 1\n5 min\nWest Ruislip · Westbound - Platform 1\n9 min\nEaling Broadway · Westbound - Platform 1\n11 min\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "15 good\n2 with delays\n3 severe or suspended",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/London%20Liverpool%20Street?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GLIVST?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/district/Route/Sequence/all",
+        "200 /StopPoint/940GZZLUBKG/Arrivals",
+        "200 /StopPoint/940GZZLULVT/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals"
+      ],
+      "screenshot": "elsewhere-ock-to-lst.png"
+    }
+  ]
+}
