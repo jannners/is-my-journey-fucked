@@ -978,6 +978,13 @@ const SAY={
   "Nothing's broken, it's just shut. {line} is done for the night.",
   "Last orders have been and gone. {line} has clocked off.",
   "{line} has gone to bed. You're walking, taxiing or kipping on a mate's sofa."]},
+ missed:{big:["Yes","Too late","Night night","Missed it"],sub:[
+  "You've missed the last train. The next one's at {next}, {wait} away. Get an Uber or go to bed.",
+  "Fucked by the clock. The last train has gone, and the first one in the morning is {next}. That's {wait}.",
+  "That was the last train, and you weren't on it. Next one's {next}, {wait} from now. Taxi or sofa, your call.",
+  "Nothing's broken, you're just late. The trains have gone to bed until {next}. That's {wait} of your life.",
+  "Last train's gone. You've got {wait} to kill before the {next}. Night bus, taxi or a very long walk.",
+  "Missed it. The next train isn't until {next}, which is {wait} away. Kebab, then a cab."]},
  dunno:{big:["Dunno","No idea","Who knows"],sub:[
   "TfL isn't answering, so it might be fucked, it might not. Try again in a minute.",
   "Your guess is as good as mine. TfL has gone quiet.",
@@ -1002,18 +1009,49 @@ function speak(){
  if(ctx.line&&/ and /.test(ctx.line)){const L=ctx.line.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   sub=sub.replace(new RegExp(`(${L}) (is|has|isn't)\\b`),(_,n,v)=>`${n} ${{is:"are",has:"have","isn't":"aren't"}[v]}`)}
  const v=$("verdict"),a=$("answer");
- v.dataset.v=level==="none"?"yes":level==="dunno"?"closed":level;
+ v.dataset.v=level==="none"?"yes":level==="dunno"||level==="missed"?"closed":level;
  a.textContent=big;a.classList.remove("pulse");a.classList.toggle("small",big.length>4);
+ // When a line has shut for the night, also say when the trains start again (if TfL has told us).
+ if(level==="closed"&&ctx.next)sub+=` First train's at ${ctx.next}, ${ctx.wait} away.`;
  $("sub").textContent=sub;
  $("alt").textContent=verdictCtx.alt||"";$("alt").hidden=!verdictCtx.alt;
  $("scene").style.setProperty("--train",ctx.train||"var(--c2c)");
  // If cartoons.js didn't load, the page still works; it just has no picture.
  $("scene").hidden=!SCENES;
- if(SCENES)$("scene").innerHTML=`<svg viewBox="${VB}" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level],level+"g")({...ctx,level})}</svg>`;
+ if(SCENES)$("scene").innerHTML=`<svg viewBox="${VB}" role="img" aria-label="${esc(big)}">${pickFrom(SCENES[level]||SCENES.closed,level+"g")({...ctx,level})}</svg>`;
+}
+// "Now" and TfL's journey times as comparable numbers. TfL gives UK clock times with no time zone
+// ("2026-11-16T04:54:00"), so both are read as if they were UTC, which keeps the sums right in any zone.
+const ukNowMs=()=>Date.parse(new Date().toLocaleString("sv-SE",{timeZone:"Europe/London"}).replace(" ","T")+"Z");
+const tflMs=t=>Date.parse(String(t||"").slice(0,19)+"Z");
+// How long until you can actually get on a train that gets you there. For each journey TfL offers it
+// finds the train you'd really be waiting for: normally the first one, but if the plan has an hour or
+// more of standing about in the middle (first leg now, connection at dawn), the train after that gap.
+// Returns the soonest across all the journeys: {mins, at:"04:54", j:journey}, or null if there are no trains.
+function nextTrain(journeys){
+ const now=ukNowMs();let best=null;
+ for(const j of journeys||[]){
+  const legs=j.legs||[],isTrain=l=>l.mode&&!/^(walking|bus|coach|cycle|cycle-hire|taxi)$/.test(l.mode.id);
+  let from=0;
+  for(let i=1;i<legs.length;i++)if(tflMs(legs[i].departureTime)-tflMs(legs[i-1].arrivalTime)>=60*60000)from=i;
+  const leg=legs.slice(from).find(isTrain);
+  if(!leg)continue;
+  const t=tflMs(leg.departureTime);if(isNaN(t))continue;
+  const mins=Math.round((t-now)/60000);
+  if(!best||mins<best.mins)best={mins,at:String(leg.departureTime).slice(11,16),j};
+ }
+ return best;
+}
+// "about 4 hours", "about 4½ hours", "50 minutes".
+function waitWords(m){
+ if(m<55)return `${m} minutes`;
+ const h=Math.round(m/30)/2;
+ return h===1?"about an hour":`about ${Math.floor(h)}${h%1?"½":""} hours`;
 }
 // Decides the overall level, checking in this order:
 //   dunno  – TfL isn't answering, or a picked journey couldn't be planned
 //   closed – something's shut for the night and nothing's actually broken
+//   missed – it's night and the next train is an hour or more away: you've missed the last one
 //   yes    – any leg is broken (for "either" legs, all its lines must be broken)
 //   none   – TfL found no way to get there
 //   bit    – any leg has delays
@@ -1025,8 +1063,13 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
  let level,ctx={};
  // Who runs this trip, for lines like "c2c and TfL are behaving" (or just "TfL is" with no train company).
  const ops=[...new Set(legs.flatMap(l=>l.lines).filter(id=>RAW[id]?.modeName==="national-rail").map(lname))];
+ // Missed the last train? Only asked late at night (9pm to 6am), so a quiet Sunday afternoon
+ // with a long gap between trains doesn't count.
+ const nt=nextTrain(journeys),hr=ukMinsNow()/60;
+ const missedLast=!!nt&&nt.mins>=60&&(hr>=21||hr<6);
  if(noStatus||(T.custom&&jErr)||(T.custom&&journeys.length&&!legs.length))level="dunno";
  else if(closed.length&&!bad.length){level="closed";ctx={line:list(closed)}}
+ else if(missedLast)level="missed";
  else if(bad.length){level="yes";ctx={line:list(bad),from:bad[0].from,to:bad[0].to}}
  else if(!journeys.length&&!jErr)level="none";
  else if(warn.length){level="bit";ctx={line:list(warn)}}
@@ -1042,6 +1085,11 @@ function renderVerdict(T,legs,journeys,noStatus,jErr){
    const walk=(j.legs||[]).filter(l=>l.mode?.id==="walking"&&l.duration>4).map(l=>l.duration);
    if(via.length)alt=`Plan B: leave ${hm(j.startDateTime)}, arrive ${hm(j.arrivalDateTime)} on the ${via.join(", then ")}${walk.length?`, with ${/^(8|11|18)$|^8\d$/.test(String(Math.max(...walk)))?"an":"a"} ${Math.max(...walk)}-minute walk`:""}.`;
   }
+ }
+ if(nt&&nt.mins>=60&&(level==="missed"||level==="closed")){
+  ctx.next=nt.at;ctx.wait=waitWords(nt.mins);
+  // The "Plan B" here is simply the first way there in the morning.
+  if(!alt){const hm=x=>String(x||"").slice(11,16);alt=`First way there: the ${nt.at}, getting in at ${hm(nt.j.arrivalDateTime)}.`}
  }
  ctx.ops=ops.length?`${ops.join(" and ")} and TfL are`:"TfL is";
  // Stations for the cartoon departure board, and the train colour for the cartoons.
