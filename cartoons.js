@@ -259,6 +259,22 @@ ${[30,116].map(cx=>`<g transform="translate(${cx} 78)"><g ${A("a-spin","--d:1.3s
 /* ---------- Ready-made backgrounds ---------- */
 // A stretch of railway in the countryside. Options: sky, sun, hills colours, trees colour, move (seconds for the
 // scenery to scroll past; 0 = standing still), wires:false, extra (drawn behind the track), track (TRACK options).
+// A cow, facing us and chewing, with its feet at (0,0). A pheasant, facing right, feet at (0,0).
+const COW=()=>`<ellipse cx="4" cy="1" rx="24" ry="2.6" fill="#000" opacity=".18"/>
+<g transform="translate(25 -25)"><g ${A("a-rock","--a0:-14deg;--a1:22deg;--d:.7s")}><path d="M0 0q7 6 4 17" fill="none" stroke="#2b2b2b" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="4" cy="19" rx="2.2" ry="3.4" fill="#2b2b2b"/></g></g>
+${[-10,-3,12,19].map(x=>`<rect x="${x}" y="-13" width="4.4" height="12" fill="#fbfbf8" stroke="#2b2b2b" stroke-width=".8"/><rect x="${x}" y="-3" width="4.4" height="3.2" fill="#2b2b2b"/>`).join("")}
+<ellipse cx="9" cy="-10" rx="4.6" ry="3.4" fill="#f4b6c2" stroke="#c9838f" stroke-width=".6"/>
+<ellipse cx="5" cy="-21" rx="21" ry="11.5" fill="#fbfbf8" stroke="#2b2b2b" stroke-width="1"/><path d="M-2-31q9-3 13 3q-3 8-11 6q-5-4-2-9z" fill="#2b2b2b"/><path d="M17-24q7-1 8 5q-1 6-7 5q-4-5-1-10z" fill="#2b2b2b"/>
+<g transform="translate(-17 -29)"><path d="M-7-6q-6-5-4-10q4 2 6 7zM7-6q6-5 4-10q-4 2-6 7z" fill="#e9e2cf" stroke="#2b2b2b" stroke-width=".7"/><path d="M-8-3l-8-1l6 5zM8-3l8-1l-6 5z" fill="#fbfbf8" stroke="#2b2b2b" stroke-width=".7"/>
+<ellipse cx="0" cy="0" rx="8.4" ry="9.4" fill="#fbfbf8" stroke="#2b2b2b" stroke-width="1"/><path d="M1-9q7 1 7 8q-5 1-8-3z" fill="#2b2b2b"/>
+<circle cx="-3.4" cy="-2" r="1.3" fill="#111"/><circle cx="3.6" cy="-2" r="1.3" fill="#111"/><path d="M-5.4-4.6h4M1.6-4.6h4" stroke="#111" stroke-width=".9" stroke-linecap="round"/>
+<g ${A("a-bob","--dx:1.8px;--dy:.8px;--d:.42s")}><ellipse cx="0" cy="6.4" rx="7" ry="4.6" fill="#f4b6c2" stroke="#2b2b2b" stroke-width=".9"/><circle cx="-2.4" cy="5.4" r=".9" fill="#7a4a52"/><circle cx="2.4" cy="5.4" r=".9" fill="#7a4a52"/><path d="M-2.6 8.4q2.6 1.4 5.2 0" fill="none" stroke="#7a4a52" stroke-width=".8" stroke-linecap="round"/><path d="M5 8l5 3M6 9.4l5-1" stroke="#5c9a45" stroke-width="1.2" stroke-linecap="round"/></g></g>`;
+const PHEASANT=()=>`<ellipse cx="-2" cy="1" rx="15" ry="2" fill="#000" opacity=".16"/><path d="M-2-3l-1.6 3h-2.4M3-3l1.4 3h2.6" stroke="#6b5338" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<path d="M-7-9L-34-17L-8-5z" fill="#b98a4e" stroke="#7a5a2c" stroke-width=".6"/><path d="M-12-9.6l-2 2.4M-18-11.6l-2 2.6M-24-13.6l-2 2.6" stroke="#5a3d1c" stroke-width=".9"/>
+<ellipse cx="0" cy="-8" rx="10" ry="6" fill="#c9692b" stroke="#8a4317" stroke-width=".6"/><path d="M-5-9q3 2 6 0M1-6q3 2 6 0M-2-11.6q3 2 6 0" fill="none" stroke="#7a3a12" stroke-width=".8"/>
+<g transform="translate(7 -11)"><g ${A("a-bob","--dx:2.4px;--dy:0px;--d:.22s")}><path d="M0 0q2-6 4-9" stroke="#1f6b4a" stroke-width="4.6" fill="none" stroke-linecap="round"/><path d="M-1-2.4q3-1.6 5.4-.4" stroke="#fff" stroke-width="1.6" fill="none"/>
+<circle cx="4.6" cy="-10.4" r="3.6" fill="#1f6b4a"/><circle cx="5.2" cy="-10.6" r="2.2" fill="#d62828"/><circle cx="5.6" cy="-11" r=".9" fill="#111"/><path d="M7.8-10.8l4 1.2l-3.8 1.2z" fill="#e9c46a"/></g></g>`;
+
 const LINE=(o={})=>`${DEFS}${SKY(o.sky||"Day")}${o.sun?SUN(o.sun[0],o.sun[1],o.sun[2]):""}${o.clouds===false?"":CLOUD(36,18,1,44,o.cloud)+CLOUD(214,34,.72,60,o.cloud)}
 <rect x="0" y="118" width="400" height="42" fill="${(o.hillc||[])[1]||"#86c477"}"/><g transform="translate(0 -24)">${BACK((o.hills===false?"":HILLS(...(o.hillc||[])))+(o.trees===false?"":TREES(o.treec))+(o.extraBack||""),o.move?o.move*9:0)}</g>${o.extra||""}
 ${o.wires===false?"":OHLE({move:!!o.move,d:o.move?o.move*.5:0})}${TRACK({move:!!o.move,d:o.move?o.move*.035:0,...(o.track||{})})}`;
@@ -317,7 +333,36 @@ no:[
   ${PERSON(262,180,{coat:COATS[3],pose:"down",long:1,hair:HAIR[5],skin:SKIN[4],face:"flat",scarf:"#2a9d8f",headAn:A("a-rock","--a0:0deg;--a1:-9deg;--d:1.7s")})}
   ${rep(3,i=>NOTE(220+i*12,116-i*5,i))}
   ${BUBBLE(138,120,70,96,62,["Steady on."],A("a-pop","--d:5s"))}`)}
-  ${CAP("ON TIME. STEADY ON.",8,2)}`
+  ${CAP("ON TIME. STEADY ON.",8,2)}`,
+
+ // Every train on time. Someone takes a photo, because nobody will believe them.
+ c=>`${STATION()}${BOARD(200,40,188,[{l:"08:12 "+DEST(c),r:"On time",c:"g"},{l:"08:27 "+DEST(c),r:"On time",c:"g"},{l:"08:42 "+DEST(c),r:"On time",c:"g"}])}
+  ${ZOOM(`${PERSON(150,180,{coat:COATS[2],pose:"high",propR:PROP.phone,face:"smile",brow:"up",long:1,hair:HAIR[2],scarf:"#e9c46a",an:A("a-bob","--dy:-1.6px;--d:.4s")})}
+  ${SPARKLE(165,116,0,"#fff")}${SPARKLE(172,124,2,"#fff")}
+  ${PERSON(104,180,{coat:COATS[0],pose:"hips",hat:"bowler",tie:"#bc4749",hair:HAIR[4],face:"flat",headAn:A("a-rock","--a0:0deg;--a1:10deg;--d:1.6s")})}
+  ${BUBBLE(146,121,36,93,128,["Nobody will believe me."],A("a-pop","--d:5s"))}`)}
+  ${CAP("ALL ON TIME. GET A PHOTO.",8,2)}`,
+
+ // On time, so the station has put the bunting out.
+ ()=>`${STATION({train:`<g transform="translate(-60 84) scale(1.5)">${CAR(0,0,{pax:1,driver:1})}</g>`,canopy:false})}
+  <rect x="0" y="0" width="400" height="20" fill="#48535e"/><rect x="0" y="19" width="400" height="5" fill="#2f5d50"/>
+  <path d="M0 26q100 14 200 0t200 0" fill="none" stroke="#f4f1ea" stroke-width="1"/>
+  ${rep(16,i=>{const x=12+i*25,u=(x%200)/200,y=26+28*u*(1-u);return `<g transform="translate(${x} ${y.toFixed(1)})"><g ${A("a-rock",`--a0:-9deg;--a1:9deg;--d:${.7+i%3*.15}s;animation-delay:${-i*.2}s`)}><path d="M-7 0h14l-7 14z" fill="${["#c1121f","#fdfdfb","#1d3557"][i%3]}" stroke="#0003" stroke-width=".5"/></g></g>`})}
+  ${ZOOM(`${PERSON(292,180,{hivis:1,hat:"cap",pose:"high",face:"smile",skin:SKIN[2],armR:A("a-rock","--a0:-16deg;--a1:18deg;--d:.3s"),
+    propR:(x,y)=>`<line x1="${x}" y1="${y+2}" x2="${x}" y2="${y-15}" stroke="#6b4a32" stroke-width="1.3"/><path d="M${x} ${y-15}h12l-3 3.6l3 3.6h-12z" fill="#2a9d8f"/>`})}
+  ${PERSON(334,180,{coat:COATS[3],pose:"hold",propR:PROP.tea,face:"smile",long:1,hair:HAIR[5],skin:SKIN[4]})}${STEAM(345,128)}
+  ${PERSON(250,180,{coat:COATS[5],pose:"up",face:"smile",hair:HAIR[1],skin:SKIN[3],an:A("a-bob","--dy:-3px;--d:.3s")})}`)}
+  ${CAP("ON TIME. PUT THE BUNTING OUT.",8,170)}`,
+
+ // Nothing to complain about, which is its own kind of problem.
+ c=>`${STATION()}${BOARD(236,40,152,[{l:"08:12 "+DEST(c),r:"On time",c:"g"}])}
+  ${ZOOM(`${BENCH(146,161)}
+  ${PERSON(160,180,{sit:1,coat:COATS[0],hat:"bowler",tie:"#6d597a",pose:"both",propL:PROP.paper,hair:HAIR[4],face:"flat"})}
+  ${PERSON(184,180,{sit:1,coat:COATS[1],pose:"hold",propR:PROP.tea,long:1,hair:HAIR[3],skin:SKIN[1],face:"flat",scarf:"#264653"})}${STEAM(195,128)}
+  ${BUBBLE(156,122,34,92,118,["Nothing to moan about."],A("pha","--d:7s"))}
+  ${BUBBLE(190,122,196,92,86,["Awful, isn’t it."],A("phb","--d:7s"))}`)}
+  ${PIGEON(318,180,{s:1.1,headAn:A("a-bob","--dx:-2.4px;--dy:0px;--d:.2s")})}
+  ${CAP("ON TIME. NOTHING TO MOAN ABOUT.",8,2)}`
 ],
 
 /* ---------------- A BIT FUCKED ---------------- */
@@ -396,7 +441,31 @@ bit:[
   ${TRAINSET(70,{pax:1,panto:1,driver:1})}
   <g transform="translate(236 121)"><g ${A("a-rock","--a0:-8deg;--a1:12deg;--d:.14s")}><path d="M0 0h8" stroke="#1d3557" stroke-width="3.6" stroke-linecap="round"/><circle cx="10" cy=".4" r="2.1" fill="#f6cfae"/></g></g>
   ${BUBBLE(238,106,150,26,176,["“We are being held at a red","signal. Apologies.”"])}
-  ${CAP("AWAITING A PLATFORM",8,166)}`
+  ${CAP("AWAITING A PLATFORM",8,166)}`,
+
+ // A cow on the line, in no hurry at all.
+ ()=>`${LINE({sun:[348,30,12],extraBack:SHEEP()})}${TRAINSET(-8,{pax:1,panto:1,driver:1})}
+  <g transform="translate(300 ${RY+3}) scale(1.35)">${COW()}</g>
+  <g transform="translate(222 108)"><text text-anchor="middle" ${A("big a-blink","font-size:14px;--d:1.3s;--o:0")}>BEEP</text></g>
+  ${BUBBLE(284,96,300,66,46,["Moo."],A("a-pop","--d:5s"))}
+  ${CAP("A COW IS CONSIDERING ITS OPTIONS")}`,
+
+ // The train's ready. The driver is still on his way back with his lunch.
+ ()=>`${STATION({train:`<g transform="translate(-80 84) scale(1.5)">${CAR(0,0,{pax:1})}</g>`})}
+  ${ZOOM(CROWD([92,300,342],180,{k:2,each:i=>({pose:i===1?"watch":"hips",brow:"cross",propR:null,an:""})}))}
+  <g ${A("a-pass","--x0:-60px;--x1:460px;--d:4.6s")}>${PERSON(0,186,{s:1.12,coat:"#1d3557",leg:"#1b2440",hat:"cap",tie:"#c1121f",pose:"hold",propR:PROP.coffee,face:"o",skin:SKIN[1],an:A("a-bob","--dy:-3px;--d:.2s"),
+    legR:A("a-rock","--a0:-36deg;--a1:36deg;--d:.2s"),legL:A("a-rock","--a0:36deg;--a1:-36deg;--d:.2s"),armL:A("a-rock","--a0:-38deg;--a1:30deg;--d:.2s"),
+    propL:(x,y)=>`<rect x="${x-6}" y="${y-2}" width="12" height="4.6" rx="2.2" fill="#d9a35f" stroke="#a8742f" stroke-width=".5"/><path d="M${x-3} ${y-1}v2.6M${x} ${y-1}v2.6M${x+3} ${y-1}v2.6" stroke="#a8742f" stroke-width=".6"/>`})}
+   ${BUBBLE(-4,118,-70,90,62,["Coming!"])}</g>
+  ${CAP("AWAITING THE DRIVER. HE’S BEEN TOLD.",8,2)}`,
+
+ // Today's excuse, and it keeps changing.
+ c=>`${STATION()}${BOARD(196,40,192,[{l:"08:12 "+DEST(c),r:"Delayed"},{l:"Due to",alt:["leaves","sunshine","a pheasant"]}])}
+  ${ZOOM(`${PERSON(120,180,{coat:COATS[6],pose:"face",hair:HAIR[2],tie:"#264653",propL:PROP.case,headAn:A("a-rock","--a0:-4deg;--a1:4deg;--d:.9s")})}
+  ${PERSON(170,180,{coat:COATS[8],pose:"point",face:"o",brow:"up",long:1,hair:HAIR[1],skin:SKIN[2],scarf:"#bc4749"})}
+  ${BUBBLE(166,121,60,93,84,["A pheasant?!"],A("ph3","--d:7.5s"))}`)}
+  <g ${A("a-pass","--x0:-50px;--x1:450px;--d:9s")}><g transform="translate(0 184) scale(1.25)">${PHEASANT()}</g></g>
+  ${CAP("TODAY’S EXCUSE",8,2)}`
 ],
 
 /* ---------------- FUCKED ---------------- */
@@ -503,7 +572,44 @@ yes:[
   <g transform="translate(201 ${RY-8})"><g class="a-wheel"><g ${A("a-spin","--d:.4s")}><circle r="7.6" fill="#23272e"/><circle r="5.6" fill="none" stroke="#a3acb6" stroke-width="1.4"/><path d="M-5.4 0H5.4M0-5.4V5.4" stroke="#8a939e" stroke-width="1.1"/><circle r="2.1" fill="#cfd5dc"/></g></g></g>
   <g ${A("a-pass","--x0:0px;--x1:190px;--d:3.6s")}>${PERSON(236,184,{s:.82,hivis:1,hat:"hard",pose:"up",face:"o",brow:"up",an:A("a-bob","--dy:-3px;--d:.17s"),legR:A("a-rock","--a0:-38deg;--a1:38deg;--d:.17s"),legL:A("a-rock","--a0:38deg;--a1:-38deg;--d:.17s"),armR:A("a-rock","--a0:-14deg;--a1:14deg;--d:.17s"),armL:A("a-rock","--a0:14deg;--a1:-14deg;--d:.17s")})}</g>
   <g transform="translate(258 104)"><text text-anchor="middle" ${A("big a-pop","--d:3.6s")}>BOING!</text></g>
-  ${CAP("WHEEL’S COME OFF")}`
+  ${CAP("WHEEL’S COME OFF")}`,
+
+ // Total power failure. The cleaner needed the socket.
+ ()=>`${STATION({back:WALL(),train:`<g transform="translate(-120 84) scale(1.5)">${CAR(0,0,{dark:1})}</g>`})}
+  ${BOARD(14,40,150,[{l:"All trains",r:"No power",c:"r",rb:"--d:1s;--o:.2"}])}
+  <rect x="289.4" y="118" width="5.2" height="34" fill="#59636e"/><rect x="278" y="98" width="28" height="22" rx="2.6" fill="#fdfdfb" stroke="#aab2bd" stroke-width="1.2"/>
+  <rect x="284" y="103" width="16" height="13" rx="2.4" fill="#e6eaef" stroke="#8e98a4" stroke-width="1"/><path d="M292 116q2 40 44 50" fill="none" stroke="#1b1f27" stroke-width="2.2"/>
+  <path d="M176 150q30 6 44 24" fill="none" stroke="#1b1f27" stroke-width="3.4" stroke-linecap="round"/>
+  <g transform="translate(222 176) rotate(-18)"><rect x="-2" y="-8" width="24" height="17" rx="4" fill="#fdfdfb" stroke="#8e98a4" stroke-width="1.2"/><rect x="22" y="-6.4" width="9" height="3" fill="#d9b25f"/><rect x="22" y="3.6" width="9" height="3" fill="#d9b25f"/><rect x="22" y="-1.6" width="11" height="3.2" fill="#d9b25f"/></g>
+  <g transform="translate(336 184)"><g ${A("a-bob","--dx:-5px;--dy:0px;--d:.6s")}><path d="M2-12L20-58" stroke="#59636e" stroke-width="2.6" stroke-linecap="round"/><rect x="-8" y="-40" width="15" height="30" rx="5" fill="#d62828" stroke="#8f1a1a" stroke-width="1"/><rect x="-5" y="-34" width="9" height="12" rx="3" fill="#fff" opacity=".25"/><path d="M-16-10h30l3 9h-36z" fill="#2c323a"/></g></g>
+  ${PERSON(366,185,{s:1.12,flip:1,coat:"#7fb7be",leg:"#3d5a80",pose:"hold",skin:SKIN[1],hair:HAIR[4],long:1,face:"smile",armR:A("a-rock","--a0:-6deg;--a1:8deg;--d:.6s")})}
+  ${PERSON(254,185,{s:1.12,hivis:1,hat:"hard",pose:"hips",brow:"cross",face:"flat",skin:SKIN[3],headAn:A("a-rock","--a0:0deg;--a1:8deg;--d:1.5s")})}
+  ${BUBBLE(360,116,246,56,128,["Needed the socket for","the hoover, love."],A("a-pop","--d:6s"))}
+  ${CAP("TOTAL POWER FAILURE",8,2)}`,
+
+ // The rail replacement bus has broken down, so the passengers are pushing it.
+ ()=>`${DEFS}${SKY("Grey")}${CLOUD(60,16,1.1,50,"#eef1f4")}${CLOUD(250,30,.8,70,"#eef1f4")}${HILLS("#9fbf8f","#84ad77")}${TREES("#5c8f58")}
+  <rect x="0" y="138" width="400" height="14" fill="#4f7d49"/>${rep(14,i=>`<circle cx="${i*30+10}" cy="139" r="${9+i%3*2}" fill="#4f7d49"/>`)}
+  <rect x="0" y="150" width="400" height="40" fill="url(#gRoad)"/><rect x="0" y="150" width="400" height="2.4" fill="#aab2bd"/>
+  <g ${A("a-loop","--p:-40px;--d:9s")}>${rep(12,i=>`<rect x="${i*40}" y="180" width="22" height="2.6" fill="#f4f5f7"/>`)}</g>
+  <g transform="translate(150 104)"><g ${A("a-bob","--dx:2.4px;--dy:0px;--d:.7s")}>${COACH()}</g></g>
+  ${SMOKE(322,128,5,{r:8,rx:10,ry:-60,d:2.4,c:"#2f3237",s1:2.4})}
+  ${[[142,COATS[1],SKIN[0],HAIR[2]],[118,COATS[2],SKIN[3],HAIR[1]],[94,COATS[4],SKIN[1],HAIR[5]]].map(([x,coat,skin,hair],i)=>`<g transform="rotate(16 ${x} 172)">${PERSON(x,172-i%2*2+6,{s:.84,coat,skin,hair,long:i===1,hat:i===2?"beanie":"",pose:"point",face:"grit",brow:"cross",
+    armL:`transform="rotate(-88)"`,an:A("a-bob","--dx:2.4px;--dy:0px;--d:.7s"),legR:A("a-rock","--a0:-24deg;--a1:14deg;--d:.7s"),legL:A("a-rock","--a0:14deg;--a1:-24deg;--d:.7s")})}</g>`).join("")}
+  <g transform="translate(96 112)"><text text-anchor="middle" ${A("big a-blink","font-size:15px;--d:1.4s;--o:0")}>HEAVE!</text></g>
+  ${CAP("THE REPLACEMENT BUS NEEDS A REPLACEMENT")}`,
+
+ // It's been windy. Somebody's trampoline is in the overhead wires.
+ ()=>`${LINE({sky:"Grey",cloud:"#eef1f4",hillc:["#9fbf8f","#84ad77"],treec:"#5c8f58"})}${TRAINSET(-40,{pax:1,panto:1,driver:1})}
+  <g transform="translate(292 66)"><g ${A("a-rock","--a0:-7deg;--a1:9deg;--d:1.3s")}><g transform="rotate(-22)"><path d="M-25 4v25M25 4v25M-9 9v25M9 9v25M-29 29h8M21 29h8M-13 34h8M5 34h8" stroke="#4a535e" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+   <ellipse rx="36" ry="10.5" fill="#2f7fd1" stroke="#1d5a9c" stroke-width="1"/><ellipse rx="27" ry="6.8" fill="#15181d"/><path d="M-36 0a36 10.5 0 0 0 72 0" fill="none" stroke="#1d5a9c" stroke-width="1.4"/></g></g></g>
+  ${SPARKS(268,60,.8)}
+  ${rep(4,i=>`<path d="M${420} ${40+i*26}h-34" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".7" ${A("a-pass",`--x0:40px;--x1:-470px;--d:${1.1+i*.2}s;animation-delay:${-i*.35}s`)}/>`)}
+  ${LEAVES(7,["#7fae5c","#a3c585","#5c8f58"])}
+  ${PERSON(212,185,{s:.92,hivis:1,hat:"hard",pose:"ear",face:"o",brow:"up",headAn:A("a-rock","--a0:-14deg;--a1:-8deg;--d:1.2s")})}
+  ${PERSON(352,185,{s:.8,flip:1,coat:"#e76f51",leg:"#264653",pose:"high",face:"sad",hair:HAIR[3],long:1,armR:A("a-rock","--a0:-10deg;--a1:14deg;--d:.4s")})}
+  ${BUBBLE(346,134,272,104,118,["Can we have it back?"],A("a-pop","--d:5s"))}
+  ${CAP("TRAMPOLINE ON THE WIRES")}`
 ],
 
 /* ---------------- NO ROUTE AT ALL ---------------- */
