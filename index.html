@@ -239,6 +239,13 @@ h3{margin:0}
 /* ---------- "Every line right now" ---------- */
 .netsum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .chip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+/* The counts are buttons that filter the list; the pressed one is filled in. */
+button.chip{cursor:pointer;line-height:1.45}
+button.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+#network.filtered .group h3 small{display:none}
+.chiphint{font-size:.78rem;color:var(--muted);align-self:center}
+.netsum:has([aria-pressed="true"]) .chiphint{display:none}
 .group{margin-bottom:16px}
 .group h3{font-size:.95rem;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
 .group h3 small{font-weight:600;color:var(--muted);font-size:.8rem}
@@ -1161,7 +1168,20 @@ async function loadLive(T,legs){
  }));
 }
 
-// Draws "Every line right now": a summary count, then each group with problem lines first.
+// Which lines "Every line right now" is showing: "" for all, or "good", "warn", "bad" or "closed".
+// It's set by tapping a count, and kept while the page refreshes itself.
+let netFilter="";
+function applyNetFilter(){
+ const net=$("network");
+ // If nothing matches any more (the delays have cleared, say), go back to showing everything.
+ if(netFilter&&!net.querySelector(`.ln[data-state="${netFilter}"]`))netFilter="";
+ net.querySelectorAll(".ln").forEach(b=>{b.hidden=!!netFilter&&b.dataset.state!==netFilter});
+ net.querySelectorAll(".group").forEach(g=>{g.hidden=!g.querySelector(".ln:not([hidden])")});
+ $("netsum").querySelectorAll("[data-filter]").forEach(c=>c.setAttribute("aria-pressed",String(!!netFilter&&c.dataset.filter===netFilter)));
+ const all=$("netAll");if(all)all.hidden=!netFilter;
+ net.classList.toggle("filtered",!!netFilter);
+}
+// Draws "Every line right now": counts you can tap to filter, then each group with problem lines first.
 function renderNetwork(byMode){
  // From National Rail, show c2c plus any train company on the journey you're checking.
  const pick=m=>(byMode[m]||[]).filter(l=>m!=="national-rail"||isC2c(l)||currentLines.has(l.id));
@@ -1173,16 +1193,20 @@ function renderNetwork(byMode){
   const ls=pick(m).map(l=>({l,s:lineState(l)})).sort((a,b)=>RANK[b.s.state]-RANK[a.s.state]||a.l.name.localeCompare(b.l.name));
   ls.forEach(x=>n[x.s.state]++);
   const issues=ls.filter(x=>x.s.state!=="good").length;
-  const body=`<div class="lines">`+ls.map(({l,s})=>`<button type="button" data-line="${esc(l.id)}" class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${lcol(l.id)}" aria-label="${esc(l.name)}: ${esc(s.label)}. More info"><span class="bar"></span><span class="b">
+  const body=`<div class="lines">`+ls.map(({l,s})=>`<button type="button" data-line="${esc(l.id)}" data-state="${s.state}" class="ln ${s.state==="warn"?"warnb":s.state==="bad"?"badb":""}" style="--lc:${lcol(l.id)}" aria-label="${esc(l.name)}: ${esc(s.label)}. More info"><span class="bar"></span><span class="b">
     <span class="top2"><span class="n">${esc(l.name)}</span><span class="s ${s.state}">${esc(s.label)}</span></span>
     <span class="more">${s.reasons.length?"Why? Tap for details ›":"More info ›"}</span></span></button>`).join("")+`</div>`;
   const head=`<h3>${esc(label)}<small>${issues?`${issues} with problems`:"All good"}</small></h3>`;
   return `<div class="group">${head}${body}</div>`;
  }).join("");
  $("network").innerHTML=html;
- $("netsum").innerHTML=`<span class="chip good">${n.good} good</span>`+(n.warn?`<span class="chip warn">${n.warn} with delays</span>`:"")+
-  (n.bad?`<span class="chip bad">${n.bad} severe or suspended</span>`:"")+(n.closed?`<span class="chip closed">${n.closed} closed</span>`:"");
+ const chip=(k,text)=>n[k]?`<button type="button" class="chip ${k}" data-filter="${k}" aria-pressed="false">${n[k]} ${text}</button>`:"";
+ $("netsum").innerHTML=chip("good","good")+chip("warn","with delays")+chip("bad","severe or suspended")+chip("closed","closed")+
+  `<button type="button" class="chip" id="netAll" data-filter="" hidden>Show all</button><span class="chiphint">Tap a count to see just those lines</span>`;
+ applyNetFilter();
 }
+// Tapping a count filters the list; tapping it again (or "Show all") clears the filter.
+$("netsum").addEventListener("click",e=>{const c=e.target.closest("[data-filter]");if(!c)return;netFilter=c.dataset.filter===netFilter?"":c.dataset.filter;applyNetFilter()});
 
 /* ---------- The "Elsewhere" journey picker ----------
    store: a safe wrapper for the browser's local storage (used for recent journeys).
