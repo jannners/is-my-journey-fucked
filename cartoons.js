@@ -384,7 +384,24 @@ no:[
   ${PERSON(286,187,{s:1.1,coat:"#3f6f8f",leg:"#6b5338",hat:"beanie",hatc:"#e9c46a",hatc2:"#bc4749",pose:"both",propL:PROP.notebook,face:"smile",brow:"up",scarf:"#bc4749",an:A("a-bob","--dy:-4px;--d:.3s"),
     armR:A("a-rock","--a0:-90deg;--a1:-120deg;--d:.3s"),headExtra:`<circle cx="-2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/><circle cx="2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/>`})}
   ${BUBBLE(280,120,168,88,124,["Bang on time. Lovely."],A("a-pop","--d:3.2s"))}
-  ${CAP("ON TIME. SOMEBODY’S HAPPY.")}`
+  ${CAP("ON TIME. SOMEBODY’S HAPPY.")}`,
+
+ // Away on the dot. The guard is very pleased with himself.
+ ()=>`${STATION({train:`<g transform="translate(-60 84) scale(1.5)">${CAR(0,0,{pax:1,driver:1})}</g>`})}${CLOCK(352,62,6)}
+  ${ZOOM(`${PERSON(236,180,{coat:"#1d3557",leg:"#1b2440",hat:"cap",tie:"#c1121f",pose:"high",face:"smile",brow:"up",skin:SKIN[1],hair:HAIR[4],armR:A("a-rock","--a0:-18deg;--a1:20deg;--d:.35s"),
+    propR:(x,y)=>`<line x1="${x}" y1="${y+2}" x2="${x}" y2="${y-15}" stroke="#6b4a32" stroke-width="1.3"/><path d="M${x} ${y-15}h12l-3 3.6l3 3.6h-12z" fill="#2a9d8f"/>`,
+    headExtra:`<rect x="3" y="-47.6" width="5.4" height="2.4" rx="1" fill="#aeb6c0" stroke="#6c7682" stroke-width=".4"/>`})}
+  <g transform="translate(262 112)"><text ${A("big a-blink","font-size:13px;--d:.9s;--o:0")}>PEEP!</text></g>
+  ${PERSON(300,180,{coat:COATS[6],pose:"hips",face:"flat",brow:"cross",long:1,hair:HAIR[2],skin:SKIN[4],headAn:A("a-rock","--a0:0deg;--a1:-9deg;--d:1.6s")})}
+  ${BUBBLE(232,121,120,93,104,["To the second, that."],A("a-pop","--d:5s"))}`)}
+  ${CAP("AWAY ON THE DOT. THE GUARD IS UNBEARABLE.",8,170)}`,
+
+ // On time. Three pigeons hold up their scores.
+ c=>`${STATION()}${BOARD(214,40,174,[{l:"08:12 "+DEST(c),r:"On time",c:"g"}])}
+  ${[[150,"10"],[206,"10"],[262,"9.5"]].map(([x,n],i)=>`${PIGEON(x,180,{s:1.7,headAn:A("a-bob","--dx:-2px;--dy:0px;--d:.25s")})}
+   <g transform="translate(${x+16} 168)"><g ${A("a-bob",`--dy:-5px;--d:.5s;animation-delay:${-i*.17}s`)}><line x1="0" y1="0" x2="0" y2="-20" stroke="#6b4a32" stroke-width="2"/><rect x="-13" y="-44" width="26" height="25" rx="3" fill="#fdfdfb" stroke="#1b1f27" stroke-width="1.4"/><text x="0" y="-26.5" text-anchor="middle" class="say" style="font-size:${n.length>2?11:14}px">${n}</text></g></g>`).join("")}
+  ${ZOOM(PERSON(86,180,{coat:COATS[0],hat:"bowler",tie:"#bc4749",pose:"out",face:"smile",hair:HAIR[4],propL:PROP.case,an:A("a-rock","--a0:0deg;--a1:14deg;--d:.9s")}))}
+  ${CAP("ON TIME. THE JUDGES APPROVE.",8,2)}`
 ],
 
 /* ---------------- A BIT FUCKED ---------------- */
@@ -507,7 +524,26 @@ bit:[
   ${[212,250,288,326].map((x,i)=>PERSON(x,184,{s:.95,hivis:1,hat:"hard",pose:i===3?"point":"hold",propR:i===3?null:PROP.tea,face:i%2?"flat":"smile",skin:SKIN[(i*2+1)%5],flip:1,
     headAn:A("a-rock",`--a0:-4deg;--a1:5deg;--d:${1.2+i*.3}s`)})+(i===3?"":STEAM(x-11,138))).join("")}
   ${BUBBLE(322,126,244,96,104,["Left a bit, Dave."],A("a-pop","--d:5s"))}
-  ${CAP("ENGINEERING WORKS. ONE DIGGING, FOUR SUPERVISING.")}`
+  ${CAP("ENGINEERING WORKS. ONE DIGGING, FOUR SUPERVISING.")}`,
+
+ // Minor delays, and Brian is explaining exactly why to anyone standing still.
+ c=>`${STATION()}${BOARD(232,40,156,[{l:"08:12 "+DEST(c),r:"Delayed"}])}
+  ${ZOOM(`${PERSON(128,180,{coat:"#3f6f8f",leg:"#6b5338",pose:"palm",face:"smile",brow:"up",hair:HAIR[2],bag:1,armR:A("a-rock","--a0:-10deg;--a1:12deg;--d:.5s"),
+    headExtra:`<circle cx="-2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/><circle cx="2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/>`})}
+  ${PERSON(190,180,{coat:COATS[1],pose:"face",long:1,hair:HAIR[5],skin:SKIN[1],scarf:"#264653"})}
+  ${PERSON(238,180,{coat:COATS[5],pose:"down",eyes:"shut",face:"sad",skin:SKIN[3],hair:HAIR[1],propL:PROP.case,headAn:A("a-rock","--a0:4deg;--a1:14deg;--d:2.2s")})}
+  ${BUBBLE(124,121,40,84,138,["Well, actually, it’s the","points at "+FIT(E((c.stops&&c.stops[1])||"Crewe"),13)+"…"],A("a-pop","--d:6s"))}`)}
+  ${CAP("MINOR DELAYS. BRIAN KNOWS WHY.",8,2)}`,
+
+ // The delayed train is full. Very full.
+ ()=>`${STATION({back:WALL(),train:`<g transform="translate(40 84) scale(1.5)">${CAR(0,0,{cab:false})}</g>
+   ${[47,69,91,113].map((wx,i)=>{const x=40+1.5*(wx+9),y=110,sk=SKIN[(i*2+1)%5];return `<g transform="translate(${x} ${y})"><g ${A("a-bob",`--dx:${i%2?1:-1}px;--dy:0px;--d:${.8+i*.2}s`)}><ellipse cx="0" cy="0" rx="9" ry="9.6" fill="${sk}"/><path d="M-9-3a9 8 0 0 1 18 0q-9-5-18 0z" fill="${HAIR[(i+1)%6]}"/>
+    <ellipse cx="${i%2?2:-2}" cy="1.6" rx="4" ry="2.6" fill="#fff" opacity=".35"/><circle cx="-3.4" cy="-2.4" r="1.1" fill="#1a1a1a"/><circle cx="3.4" cy="-2.4" r="1.1" fill="#1a1a1a"/><path d="M-3 6q3-2.4 6 0" fill="none" stroke="#2a1d16" stroke-width="1.1" stroke-linecap="round"/>
+    <circle cx="${i%2?-10.5:10.5}" cy="${i%2?4:-3}" r="3.2" fill="${sk}" stroke="#0002" stroke-width=".5"/></g></g>`}).join("")}`})}
+  ${ZOOM(`${PERSON(296,180,{flip:1,hivis:1,hat:"cap",pose:"point",face:"smile",skin:SKIN[2],armR:A("a-rock","--a0:-8deg;--a1:10deg;--d:.5s")})}
+  ${PERSON(340,180,{flip:1,coat:COATS[3],pose:"hold",propR:PROP.coffee,face:"o",brow:"up",long:1,hair:HAIR[3]})}
+  ${BUBBLE(292,121,236,84,118,["Move right down","inside, please!"],A("a-pop","--d:5s"))}`)}
+  ${CAP("MINOR DELAYS. ROOM FOR A FEW MORE.",8,2)}`
 ],
 
 /* ---------------- FUCKED ---------------- */
@@ -680,7 +716,28 @@ yes:[
   ${PERSON(312,184,{s:1.05,flip:1,coat:COATS[1],pose:"high",propR:PROP.pint,face:"smile",long:1,hair:HAIR[3],skin:SKIN[1],armR:A("a-rock","--a0:-8deg;--a1:10deg;--d:.5s;animation-delay:-.25s")})}
   ${PERSON(352,184,{s:1.05,flip:1,coat:COATS[2],pose:"hold",propR:PROP.pint,face:"smile",skin:SKIN[3],hair:HAIR[1],an:A("a-rock","--a0:-3deg;--a1:3deg;--d:1.3s")})}
   ${BUBBLE(100,118,8,86,110,["Shame. Same again?"],A("a-pop","--d:5s"))}
-  ${CAP("ALL LINES SUSPENDED. PUB.",8,170)}`
+  ${CAP("ALL LINES SUSPENDED. PUB.",8,170)}`,
+
+ // Two centimetres of snow, so everything has stopped.
+ ()=>`${LINE({sky:"Snow",hillc:["#f4f7fa","#e3eaf1"],treec:"#b7c9c1",cloud:"#fff"})}${TRAINSET(-30,{pax:1,panto:1,driver:1})}
+  <rect x="0" y="${RY-2.5}" width="400" height="4" rx="2" fill="#fff"/><path d="M-22 ${TY+1}h380" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+  ${SNOW(24)}
+  ${PERSON(232,185,{s:.95,hivis:1,hat:"hard",pose:"hold",face:"o",brow:"up",scarf:"#bc4749",
+    propR:(x,y)=>`<rect x="${x-1.8}" y="${y-8}" width="3.6" height="52" fill="#ffd21f" stroke="#b99700" stroke-width=".5"/>${rep(8,i=>`<line x1="${x-1.8}" y1="${y-4+i*6}" x2="${x+.4}" y2="${y-4+i*6}" stroke="#1b1f27" stroke-width=".6"/>`)}`})}
+  ${PERSON(300,185,{s:.95,flip:1,hivis:1,hat:"hard",pose:"hold",propR:PROP.tea,face:"flat",skin:SKIN[3]})}${STEAM(290,140)}
+  ${BUBBLE(236,128,176,86,126,["Two centimetres.","Shut it all down."],A("a-pop","--d:5.5s"))}
+  ${CAP("2CM OF SNOW. THE NATION HAS STOPPED.")}`,
+
+ // No trains at all, so someone has decided to walk it.
+ c=>{const t=DEST(c).toUpperCase()+" 14 MILES",w=t.length*4.5+16;return `${LINE({sky:"Grey",cloud:"#eef1f4",move:16,wires:false,hillc:["#9fbf8f","#84ad77"],treec:"#5c8f58"})}
+  <rect x="0" y="166" width="400" height="24" fill="#84ad77"/><rect x="0" y="166" width="400" height="2" fill="#6a9a5e"/><rect x="0" y="176" width="400" height="9" fill="#cfc4a6"/>
+  <g ${A("a-pass","--x0:430px;--x1:-160px;--d:8s")}><rect x="-1.6" y="132" width="3.2" height="50" fill="#59636e"/><path d="M3 134h${w}l8 8l-8 8h-${w}z" fill="#fdfdfb" stroke="#1b1f27" stroke-width="1.2"/><text x="9" y="144.6" class="tiny" style="font-size:7px">${t}</text></g>
+  ${PERSON(196,184,{s:1.05,coat:COATS[0],hat:"bowler",tie:"#bc4749",pose:"hold",face:"grit",brow:"cross",hair:HAIR[4],propL:PROP.case,an:A("a-bob","--dy:-2px;--d:.3s"),
+    legR:A("a-rock","--a0:-30deg;--a1:30deg;--d:.3s"),legL:A("a-rock","--a0:30deg;--a1:-30deg;--d:.3s"),armL:A("a-rock","--a0:-24deg;--a1:24deg;--d:.3s"),
+    propR:(x,y)=>`<line x1="${x}" y1="${y+3}" x2="${x}" y2="${y-34}" stroke="#2c323a" stroke-width="1.5"/><path d="M${x-22} ${y-33}a22 15 0 0 1 44 0q-5.5-4-11 0t-11 0t-11 0t-11 0z" fill="#22262d" stroke="#111" stroke-width=".6"/>`})}
+  ${RAIN(24)}
+  <g ${A("a-pass","--x0:430px;--x1:-60px;--d:8s;animation-delay:-4s")}><ellipse cx="0" cy="181" rx="16" ry="2.6" fill="#8fb5d6" opacity=".8"/></g>
+  ${CAP("SOD IT. WALKING.")}`}
 ],
 
 /* ---------------- NO ROUTE AT ALL ---------------- */

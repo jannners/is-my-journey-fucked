@@ -62,6 +62,12 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--font-body);
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left))}
 .wrap{max-width:760px;margin:0 auto;display:grid;gap:26px}
+/* The station clock: a black panel with amber dot-matrix-style digits, the same in light and dark mode. */
+.clock{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#12151a;border:2px solid #3a414c;border-radius:8px;
+  padding:6px 14px;box-shadow:inset 0 0 0 2px #000;color:#ffb000;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.clock .cdate{font-weight:700;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.clock .ctime{font-weight:700;font-size:1.9rem;line-height:1.1;letter-spacing:.04em;text-shadow:0 0 8px #ffb00066}
+.clock .csec{font-size:1.1rem;opacity:.85}
 .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.85rem}
 button{font:600 .85rem var(--font-body);border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
 button:focus-visible,a:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
@@ -222,6 +228,7 @@ h3{margin:0}
 .j{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 14px;align-items:center}
 .j.dis{border-color:var(--warn)}
 .j .t{font:700 1.35rem var(--font-mono);font-variant-numeric:tabular-nums}
+.j .in{display:block;font:600 .72rem var(--font-body);color:var(--muted);letter-spacing:0}
 .j .arr{font:500 .9rem var(--font-mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .j .legs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;min-width:0}
 .j .legs small{color:var(--muted);font-size:.75rem}
@@ -293,6 +300,13 @@ footer{color:var(--muted);font-size:.78rem}
 <!-- Everything visible sits inside .wrap, which keeps the page a readable width on big screens. -->
 <div class="wrap">
   <!-- TOP BAR: journey tabs, a note saying why that direction was chosen, and the Check again button. -->
+  <!-- STATION CLOCK: the time now (UK time), styled like the clock on a platform departure board.
+       Ticked once a second by tick() in the script. -->
+  <div class="clock" role="timer" aria-label="Time now, UK">
+    <span class="cdate" id="clockDate"></span>
+    <span class="ctime"><span id="clockHM">--:--</span><span class="csec" id="clockS">:--</span></span>
+  </div>
+
   <div class="top">
     <nav class="dir" aria-label="Journey">
       <a href="#to-woodgrange" id="dirOut"><span class="to">To </span>Woodgrange Park</a>
@@ -1014,6 +1028,8 @@ function speak(){
  // When a line has shut for the night, also say when the trains start again (if TfL has told us).
  if(level==="closed"&&ctx.next)sub+=` First train's at ${ctx.next}, ${ctx.wait} away.`;
  $("sub").textContent=sub;
+ // The browser tab shows the answer too, so you can see it without switching to the page.
+ document.title=`${big} · ${document.title.replace(/^.* · /,"")}`;
  $("alt").textContent=verdictCtx.alt||"";$("alt").hidden=!verdictCtx.alt;
  $("scene").style.setProperty("--train",ctx.train||"var(--c2c)");
  // If cartoons.js didn't load, the page still works; it just has no picture.
@@ -1145,10 +1161,26 @@ function renderJourneys(js,err){
    const key=l.routeOptions?.[0]?.lineIdentifier?.id||(/district/i.test(n)?"district":/suffragette/i.test(n)?"suffragette":/c2c/i.test(n)?"c2c":null);
    const label=l.mode?.id==="bus"?`Bus ${n}`:(key&&(LINES[key]?.name||RAW[key]?.name))||n;
    return`<span class="pill" style="${key?lsty(key):"--lc:var(--muted)"}">${esc(label)}</span>`}).join(`<small>›</small>`);
-  return`<div class="j ${dis.length||(j.legs||[]).some(l=>l.isDisrupted)?"dis":""}"><span class="t">${hm(j.startDateTime)}</span>
+  return`<div class="j ${dis.length||(j.legs||[]).some(l=>l.isDisrupted)?"dis":""}"><span class="t">${hm(j.startDateTime)}<span class="in" data-dep="${tflMs(j.startDateTime)}"></span></span>
    <span class="legs">${chips}</span><span class="arr">arr ${hm(j.arrivalDateTime)}<br>${j.duration} min</span>
    ${dis.length?`<p class="note">${richText([...new Set(dis)][0],140)} <button type="button" class="morebtn" data-jdis="${journeyDis.push([...new Set(dis)])-1}">Details ›</button></p>`:""}</div>`}).join("");
+ tick();
 }
+
+/* ---------- The station clock and the "in 7 min" countdowns ---------- */
+// Runs once a second: updates the clock at the top (always UK time, wherever you are) and the
+// little countdown under each journey's departure time.
+function tick(){
+ const now=new Date(),t=now.toLocaleTimeString("en-GB",{timeZone:"Europe/London",hourCycle:"h23"});
+ $("clockHM").textContent=t.slice(0,5);$("clockS").textContent=t.slice(5);
+ $("clockDate").textContent=now.toLocaleDateString("en-GB",{timeZone:"Europe/London",weekday:"short",day:"numeric",month:"short"});
+ const ms=ukNowMs();
+ document.querySelectorAll(".j .in").forEach(e=>{
+  const m=Math.ceil((+e.dataset.dep-ms)/60000);
+  e.textContent=isNaN(m)?"":m<0?"gone":m===0?"now":m<60?`in ${m} min`:`in ${Math.floor(m/60)}h ${m%60}m`;
+ });
+}
+setInterval(tick,1000);
 
 // Draws the live departure boards. For the commute it uses the hand-picked boards in TRIPS.
 // For other journeys it makes one per Tube/Overground/Elizabeth line/DLR leg, and tries to show only
@@ -1340,6 +1372,7 @@ $("answer").onclick=speak;
 addEventListener("hashchange",check);
 setInterval(()=>{if(!document.hidden)check()},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)check()});
+tick();
 check();
 })();
 </script>
