@@ -166,6 +166,9 @@ const PROP={
  spanner:(x,y)=>`<g transform="rotate(-30 ${x} ${y})"><rect x="${x-1.3}" y="${y-17}" width="2.6" height="18" rx="1.2" fill="#aeb6c0" stroke="#6c7682" stroke-width=".4"/><path d="M${x-3.8} ${y-20}a3.8 3.8 0 0 1 7.6 0l-2.2 3.4h-3.2z" fill="#aeb6c0" stroke="#6c7682" stroke-width=".4"/></g>`,
  saw:(x,y)=>`<path d="M${x+1} ${y-2}l14 .5l-14 4z" fill="#d5dbe2" stroke="#7d8794" stroke-width=".5"/><rect x="${x-3.6}" y="${y-3}" width="5.6" height="6" rx="1.8" fill="#b9652a"/>`,
  ext:(x,y)=>`<rect x="${x-3}" y="${y-1}" width="6.4" height="12" rx="2.4" fill="#d62828"/><rect x="${x-1.4}" y="${y-3.4}" width="3.2" height="3" fill="#222"/><path d="M${x+2} ${y-2.4}q6-2 8 3" fill="none" stroke="#222" stroke-width="1.3"/>`,
+ pint:(x,y)=>`<path d="M${x-3.4} ${y-10}h7.2l-.8 11h-5.6z" fill="#e8a13a" stroke="#fff" stroke-width=".7" stroke-opacity=".7"/><rect x="${x-3.8}" y="${y-11.6}" width="8" height="3" rx="1.4" fill="#fffdf4"/>`,
+ shovel:(x,y)=>`<g transform="rotate(14 ${x} ${y})"><rect x="${x-1.1}" y="${y-12}" width="2.2" height="30" rx="1" fill="#8a5a2b"/><path d="M${x-4.6} ${y+17}h9.2v7q-4.6 5-9.2 0z" fill="#aeb6c0" stroke="#6c7682" stroke-width=".5"/><rect x="${x-3.4}" y="${y-14}" width="6.8" height="2.6" rx="1.2" fill="#8a5a2b"/></g>`,
+ notebook:(x,y)=>`<rect x="${x-4.6}" y="${y-8}" width="9.2" height="11" rx="1" fill="#fdfdfb" stroke="#8d8778" stroke-width=".5"/><rect x="${x-4.6}" y="${y-8}" width="9.2" height="2.2" fill="#c1121f"/><path d="M${x-3} ${y-3.4}h6M${x-3} ${y-1}h6M${x-3} ${y+1.2}h4" stroke="#8d8778" stroke-width=".6"/>`,
  blower:(x,y)=>`<rect x="${x-5}" y="${y-5}" width="9" height="9.5" rx="2.4" fill="#2f343c"/><path d="M${x+3} ${y-3}h19l1.5 5h-20.5z" fill="#f2a000" stroke="#b97800" stroke-width=".4"/>`
 };
 
@@ -362,7 +365,26 @@ no:[
   ${BUBBLE(156,122,34,92,118,["Nothing to moan about."],A("pha","--d:7s"))}
   ${BUBBLE(190,122,196,92,86,["Awful, isn’t it."],A("phb","--d:7s"))}`)}
   ${PIGEON(318,180,{s:1.1,headAn:A("a-bob","--dx:-2.4px;--dy:0px;--d:.2s")})}
-  ${CAP("ON TIME. NOTHING TO MOAN ABOUT.",8,2)}`
+  ${CAP("ON TIME. NOTHING TO MOAN ABOUT.",8,2)}`,
+
+ // The train's on time, so the only delay is everyone being polite at the doors.
+ ()=>`${STATION({train:`<g transform="translate(-34 84) scale(1.5)">${CAR(0,0,{pax:1,driver:1})}</g>`})}
+  ${ZOOM(`${PERSON(142,180,{coat:COATS[0],hat:"bowler",tie:"#bc4749",pose:"point",face:"smile",hair:HAIR[4],propL:PROP.case,armR:A("a-rock","--a0:-6deg;--a1:10deg;--d:.8s")})}
+  ${PERSON(214,180,{flip:1,coat:COATS[3],pose:"point",face:"smile",long:1,hair:HAIR[2],skin:SKIN[1],scarf:"#e9c46a",armR:A("a-rock","--a0:-6deg;--a1:10deg;--d:.8s;animation-delay:-.4s")})}
+  ${PERSON(256,180,{coat:COATS[5],pose:"watch",face:"flat",brow:"cross",skin:SKIN[3],hair:HAIR[1],headAn:A("a-rock","--a0:-6deg;--a1:6deg;--d:.7s")})}
+  ${BUBBLE(138,121,62,93,70,["After you."],A("pha","--d:5s"))}
+  ${BUBBLE(218,121,196,93,106,["No, no. After you."],A("phb","--d:5s"))}`)}
+  ${CAP("ON TIME. AFTER YOU. NO, AFTER YOU.",8,2)}`,
+
+ // A trainspotter at the lineside, having the best day of his life.
+ ()=>`${LINE({sun:[344,34],extraBack:SHEEP()})}
+  <g ${A("a-pass","--x0:-420px;--x1:430px;--d:3.2s")}><g ${A("a-bob","--dy:-.8px;--d:.28s")}>${TRAINSET(170,{spin:1,pax:1,panto:1,driver:1})}</g></g>
+  <rect x="0" y="170" width="400" height="20" fill="#86c477"/><rect x="0" y="170" width="400" height="2" fill="#6aa85e"/>
+  <rect x="318" y="170" width="13" height="16" rx="2" fill="#2a9d8f" stroke="#1c6e64" stroke-width=".8"/><rect x="319.4" y="166.4" width="10.2" height="4.6" rx="1.6" fill="#e6eaef" stroke="#8e98a4" stroke-width=".6"/>
+  ${PERSON(286,187,{s:1.1,coat:"#3f6f8f",leg:"#6b5338",hat:"beanie",hatc:"#e9c46a",hatc2:"#bc4749",pose:"both",propL:PROP.notebook,face:"smile",brow:"up",scarf:"#bc4749",an:A("a-bob","--dy:-4px;--d:.3s"),
+    armR:A("a-rock","--a0:-90deg;--a1:-120deg;--d:.3s"),headExtra:`<circle cx="-2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/><circle cx="2.6" cy="-51.2" r="2.6" fill="#fff" fill-opacity=".35" stroke="#2a1d16" stroke-width=".8"/>`})}
+  ${BUBBLE(280,120,168,88,124,["Bang on time. Lovely."],A("a-pop","--d:3.2s"))}
+  ${CAP("ON TIME. SOMEBODY’S HAPPY.")}`
 ],
 
 /* ---------------- A BIT FUCKED ---------------- */
@@ -465,7 +487,27 @@ bit:[
   ${PERSON(170,180,{coat:COATS[8],pose:"point",face:"o",brow:"up",long:1,hair:HAIR[1],skin:SKIN[2],scarf:"#bc4749"})}
   ${BUBBLE(166,121,60,93,84,["A pheasant?!"],A("ph3","--d:7.5s"))}`)}
   <g ${A("a-pass","--x0:-50px;--x1:450px;--d:9s")}><g transform="translate(0 184) scale(1.25)">${PHEASANT()}</g></g>
-  ${CAP("TODAY’S EXCUSE",8,2)}`
+  ${CAP("TODAY’S EXCUSE",8,2)}`,
+
+ // Minor delays. The tutting has started.
+ c=>`${STATION()}${BOARD(214,40,174,[{l:"08:12 "+DEST(c),r:"Delayed"},{l:"Expected",r:"08:26"}])}
+  ${ZOOM(`${PERSON(120,180,{coat:COATS[0],hat:"bowler",tie:"#6d597a",pose:"watch",brow:"cross",hair:HAIR[4],propL:PROP.case})}
+  ${PERSON(176,180,{coat:COATS[1],pose:"hips",brow:"cross",long:1,hair:HAIR[5],skin:SKIN[1],scarf:"#264653",headAn:A("a-rock","--a0:-5deg;--a1:5deg;--d:.6s")})}
+  ${PERSON(232,180,{coat:COATS[7],pose:"hold",propR:PROP.tea,brow:"cross",skin:SKIN[3],hair:HAIR[1],hat:"beanie",hatc:"#e76f51"})}
+  ${[[120,"ph1"],[176,"ph2"],[232,"ph3"]].map(([x,ph])=>`<g transform="translate(${x+10} 112)"><text text-anchor="middle" ${A("big "+ph,"font-size:13px;--d:2.4s")}>tut</text></g>`).join("")}`)}
+  ${PIGEON(330,180,{s:1.1,headAn:A("a-bob","--dx:-2.4px;--dy:0px;--d:.2s")})}
+  ${CAP("MINOR DELAYS. TUTTING HAS BEGUN.",8,2)}`,
+
+ // Engineering works are overrunning: one digging, four supervising.
+ ()=>`${LINE({sky:"Grey",cloud:"#eef1f4",wires:false})}
+  <path d="M96 ${RY+2}q18-20 36 0z" fill="#8a6f52" stroke="#6b5338" stroke-width=".8"/><ellipse cx="84" cy="${RY+3}" rx="14" ry="3.4" fill="#2b2118"/>
+  <path d="M30 ${RY+4}l5-16h4l5 16z" fill="#ff7a1a"/><rect x="33.4" y="${RY-6}" width="7.2" height="3" fill="#fff"/>
+  <rect x="150" y="${RY-22}" width="5" height="26" fill="#59636e"/><rect x="128" y="${RY-36}" width="50" height="17" rx="2" fill="#ffd21f" stroke="#1b1f27" stroke-width="1.2"/><text x="153" y="${RY-25}" text-anchor="middle" class="tiny" style="font-size:5.4px">MEN AT WORK</text><text x="153" y="${RY-21}" text-anchor="middle" class="tiny" style="font-size:3.6px">(ONE OF THEM)</text>
+  ${PERSON(72,184,{s:.95,hivis:1,hat:"hard",pose:"both",face:"grit",propR:PROP.shovel,skin:SKIN[2],an:A("a-rock","--a0:4deg;--a1:14deg;--d:.5s")})}
+  ${[212,250,288,326].map((x,i)=>PERSON(x,184,{s:.95,hivis:1,hat:"hard",pose:i===3?"point":"hold",propR:i===3?null:PROP.tea,face:i%2?"flat":"smile",skin:SKIN[(i*2+1)%5],flip:1,
+    headAn:A("a-rock",`--a0:-4deg;--a1:5deg;--d:${1.2+i*.3}s`)})+(i===3?"":STEAM(x-11,138))).join("")}
+  ${BUBBLE(322,126,244,96,104,["Left a bit, Dave."],A("a-pop","--d:5s"))}
+  ${CAP("ENGINEERING WORKS. ONE DIGGING, FOUR SUPERVISING.")}`
 ],
 
 /* ---------------- FUCKED ---------------- */
@@ -609,7 +651,36 @@ yes:[
   ${PERSON(212,185,{s:.92,hivis:1,hat:"hard",pose:"ear",face:"o",brow:"up",headAn:A("a-rock","--a0:-14deg;--a1:-8deg;--d:1.2s")})}
   ${PERSON(352,185,{s:.8,flip:1,coat:"#e76f51",leg:"#264653",pose:"high",face:"sad",hair:HAIR[3],long:1,armR:A("a-rock","--a0:-10deg;--a1:14deg;--d:.4s")})}
   ${BUBBLE(346,134,272,104,118,["Can we have it back?"],A("a-pop","--d:5s"))}
-  ${CAP("TRAMPOLINE ON THE WIRES")}`
+  ${CAP("TRAMPOLINE ON THE WIRES")}`,
+
+ // They've found your train. It's in a field.
+ ()=>`${DEFS}${SKY("Day")}${SUN(350,30,12)}${CLOUD(36,18,1,44)}${CLOUD(214,34,.72,60)}
+  <g transform="translate(0 -30)">${HILLS()}${TREES()}</g><rect x="0" y="126" width="400" height="64" fill="#86c477"/>
+  <path d="M0 150q100-10 200 0t200 0V190H0z" fill="#79b96b"/>
+  ${rep(9,i=>`<path d="M${20+i*44} ${172+i%3*5}l2-6l2 6" stroke="#5c9a45" stroke-width="1.4" fill="none" stroke-linecap="round"/>`)}
+  <g transform="rotate(-5 150 150)"><g transform="translate(0 6)">${CAR(52,TY,{pax:1,panto:false})}</g></g>
+  <path d="M40 168q60-10 110-2" stroke="#6b5338" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"/>
+  ${[[286,176],[318,182],[352,174],[30,180]].map(([x,y],i)=>`<g transform="translate(${x} ${y}) scale(${i===3?-2.4:2.4} 2.4)"><ellipse cx="0" cy="-5" rx="5.4" ry="3.8" fill="#fbfbf8" stroke="#d9d4c7" stroke-width=".4"/><path d="M-2.4-2v3M2.4-2v3" stroke="#2b2b2b" stroke-width="1"/><g ${A("a-rock",`--a0:-6deg;--a1:8deg;--d:${1+i*.3}s`)}><circle cx="-5.4" cy="-6.6" r="2.3" fill="#2b2b2b"/><circle cx="-6.2" cy="-7" r=".45" fill="#fff"/></g></g>`).join("")}
+  ${PERSON(262,186,{s:1.05,coat:"#5a6b3a",leg:"#6b5338",hat:"cap",hatc:"#7a5a2c",pose:"ear",face:"flat",brow:"up",skin:SKIN[0],hair:HAIR[4]})}
+  ${BUBBLE(258,124,176,92,144,["Well, it’s not one of mine."],A("a-pop","--d:5.5s"))}
+  ${CAP("GOOD NEWS: WE’VE FOUND YOUR TRAIN")}`,
+
+ // Everything's suspended, so everyone has gone to the pub.
+ ()=>`${DEFS}${SKY("Dusk")}${TOWN("#6f6a7e",1)}
+  <rect x="0" y="150" width="400" height="40" fill="url(#gPlat)"/><rect x="0" y="150" width="400" height="1.5" fill="#e9ecef"/>
+  <path d="M118 62L204 30L290 62Z" fill="#5a3b33" stroke="#3d2822" stroke-width="1"/><rect x="262" y="34" width="12" height="22" fill="#7a4a3c"/>${SMOKE(268,32,3,{r:5,c:"#e6ddd2",rx:14,ry:-30,d:3})}
+  <rect x="124" y="62" width="160" height="90" fill="#f1e6cf" stroke="#3d2822" stroke-width="1.2"/><path d="M124 96H284M152 62V96M256 62V96" stroke="#3d2822" stroke-width="3"/>
+  <rect x="124" y="98" width="160" height="12" fill="#1d4e3a"/><text x="204" y="106.8" text-anchor="middle" class="name" style="font-size:6.6px;fill:#e9c46a">THE SIGNAL FAILURE ARMS</text>
+  ${[[134,70],[224,70]].map(([x,y])=>`<rect x="${x}" y="${y}" width="46" height="20" rx="1.5" fill="url(#gGlassLit)" stroke="#3d2822" stroke-width="1.4"/><path d="M${x+15.3} ${y}v20M${x+30.6} ${y}v20" stroke="#3d2822" stroke-width="1"/>`).join("")}
+  ${[[134,116],[232,116]].map(([x,y])=>`<rect x="${x}" y="${y}" width="42" height="24" rx="1.5" fill="url(#gGlassLit)" stroke="#3d2822" stroke-width="1.4" ${A("a-pulse","--d:2.2s;--o:.75")}/><path d="M${x+14} ${y}v24M${x+28} ${y}v24" stroke="#3d2822" stroke-width="1"/>`).join("")}
+  <rect x="190" y="114" width="28" height="38" rx="2" fill="#1d4e3a" stroke="#3d2822" stroke-width="1.2"/><rect x="194" y="118" width="20" height="13" rx="1" fill="url(#gGlassLit)"/><circle cx="213" cy="135" r="1.4" fill="#e9c46a"/>
+  <path d="M284 70h30" stroke="#2c323a" stroke-width="2.4"/><g transform="translate(304 71)"><g ${A("a-rock","--a0:-9deg;--a1:9deg;--d:1.5s")}><path d="M-8 0v6M8 0v6" stroke="#2c323a" stroke-width="1"/><rect x="-12" y="6" width="24" height="24" rx="2" fill="#1d4e3a" stroke="#e9c46a" stroke-width="1.2"/><circle cx="0" cy="15" r="4" fill="#c1121f"/><rect x="-1" y="18" width="2" height="9" fill="#e9ecef"/></g></g>
+  ${BOARD(8,40,106,[{l:"Trains",r:"Cancelled",c:"r"}],{rods:false})}<rect x="60" y="61" width="3" height="90" fill="#59636e"/>
+  ${PERSON(104,184,{s:1.05,coat:COATS[0],hat:"bowler",tie:"#bc4749",pose:"high",propR:PROP.pint,face:"smile",hair:HAIR[4],armR:A("a-rock","--a0:-8deg;--a1:10deg;--d:.5s"),propL:PROP.case})}
+  ${PERSON(312,184,{s:1.05,flip:1,coat:COATS[1],pose:"high",propR:PROP.pint,face:"smile",long:1,hair:HAIR[3],skin:SKIN[1],armR:A("a-rock","--a0:-8deg;--a1:10deg;--d:.5s;animation-delay:-.25s")})}
+  ${PERSON(352,184,{s:1.05,flip:1,coat:COATS[2],pose:"hold",propR:PROP.pint,face:"smile",skin:SKIN[3],hair:HAIR[1],an:A("a-rock","--a0:-3deg;--a1:3deg;--d:1.3s")})}
+  ${BUBBLE(100,118,8,86,110,["Shame. Same again?"],A("a-pop","--d:5s"))}
+  ${CAP("ALL LINES SUSPENDED. PUB.",8,170)}`
 ],
 
 /* ---------------- NO ROUTE AT ALL ---------------- */
