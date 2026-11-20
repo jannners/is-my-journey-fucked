@@ -1,0 +1,146 @@
+{
+  "checkedAt": "20 Nov 2026, 15:44",
+  "lines": [
+    {
+      "id": "district",
+      "name": "District",
+      "statuses": [
+        {
+          "severity": 6,
+          "description": "Severe Delays",
+          "reason": "District Line: No service between Turnham Green and Ealing Broadway due to strike action. SEVERE DELAYS on the rest of the line due to train cancellations. London Buses, DLR, Mildmay line, South Western Railway, Elizabeth line, C2C and South Western Railway are accepting valid tickets via any reasonable route. "
+        },
+        {
+          "severity": 5,
+          "description": "Part Closure",
+          "reason": "TUBE STRIKE: Piccadilly line service control staff are taking strike action from Friday 20 until Saturday evening, 21 November. Due to shared infrastructure around the Ealing Common District line depot, there will be no DISTRICT LINE service between Turnham Green and Ealing Broadway from midday on Friday until Saturday evening, with a reduced service on the rest of the line. No Piccadilly line service is expected during the strike. Replacement bus services operate during Friday Night Tube and Saturday daytime hours only. Please use MILDMAY LINE services between Gunnersbury, Kew Gardens and Richmond, where available."
+        }
+      ]
+    },
+    {
+      "id": "suffragette",
+      "name": "Suffragette",
+      "statuses": [
+        {
+          "severity": 10,
+          "description": "Good Service",
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "id": "c2c",
+      "name": "c2c",
+      "statuses": [
+        {
+          "severity": 10,
+          "description": "Good Service",
+          "reason": ""
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "auto (time of day)",
+      "hash": "",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NAH MATE",
+      "sub": "Smooth as you like. Nothing's broken. Get moving.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\nBarking\nc2c ›\nRunning fine\nOckendon",
+      "journeys": "16:08\nin 24 min\nSuffragette\n›\nc2c\narr 16:40\n32 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:22\nin 38 min\nSuffragette\n›\nc2c\narr 16:55\n33 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:53\nin 1h 9m\nSuffragette\n›\nc2c\narr 17:24\n31 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\n10 min\nBarking Riverside · Platform 2\n25 min\nBarking Riverside · Platform 2\n39 min\nBarking Riverside · Platform Unknown\n55 min\nBarking Riverside · Platform Unknown\n70 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n2 with delays\n2 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "auto-time-of-day-.png"
+    },
+    {
+      "name": "to Woodgrange Park",
+      "hash": "#to-woodgrange",
+      "finished": true,
+      "question": "IS MY JOURNEY TO WOODGRANGE PARK FUCKED?",
+      "answer": "NO",
+      "sub": "Fuck-free zone. All your lines are running.",
+      "planB": "",
+      "dirNote": "You picked this direction",
+      "route": "Ockendon\nc2c ›\nRunning fine\nBarking\nSuffragette ›\nRunning fine\nWoodgrange Park",
+      "journeys": "15:58\nin 14 min\nc2c\n›\nSuffragette\narr 16:27\n29 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:10\nin 26 min\nc2c\n›\nc2c\n›\nSuffragette\narr 17:12\n62 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:57\nin 1h 13m\nc2c\n›\nc2c\n›\nSuffragette\narr 17:27\n30 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›",
+      "live": "Suffragette\nBarking to Woodgrange Park\nGospel Oak · Platform 8\n11 min\nGospel Oak · Platform 8\n26 min\nGospel Oak · Platform 8\n41 min\nGospel Oak · Platform 8\n56 min\nGospel Oak · Platform 8\n71 min\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n2 with delays\n2 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GWDGRNPK?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-woodgrange-park.png"
+    },
+    {
+      "name": "to Ockendon",
+      "hash": "#to-ockendon",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NAH",
+      "sub": "All clear. c2c and TfL are behaving themselves for once.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\nBarking\nc2c ›\nRunning fine\nOckendon",
+      "journeys": "16:08\nin 24 min\nSuffragette\n›\nc2c\narr 16:40\n32 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:22\nin 38 min\nSuffragette\n›\nc2c\narr 16:55\n33 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:53\nin 1h 9m\nSuffragette\n›\nc2c\narr 17:24\n31 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\n10 min\nBarking Riverside · Platform 2\n25 min\nBarking Riverside · Platform 2\n39 min\nBarking Riverside · Platform Unknown\n55 min\nBarking Riverside · Platform Unknown\n70 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n2 with delays\n2 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-ockendon.png"
+    },
+    {
+      "name": "Elsewhere: OCK to LST",
+      "hash": "#go/OCK/LST",
+      "finished": true,
+      "question": "IS MY JOURNEY TO LONDON LIVERPOOL STREET FUCKED?",
+      "answer": "TOTALLY",
+      "sub": "Proper fucked. Kiss your evening goodbye, because District is broken between Barking and Mile End.",
+      "planB": "Plan B: leave 16:57, arrive 17:35 on the c2c, then Hammersmith & City, then Central.",
+      "dirNote": "Ockendon to London Liverpool Street · Reverse it · Back to my commute",
+      "route": "Ockendon\nc2c ›\nRunning fine\nBarking\nDistrict ›\nFucked\n\nDistrict: No service between Turnham Green and Ealing Broadway due to strike action. SEVERE DELAYS on the rest of the line due to train cancellations. London Buses, DLR, Mildmay line, South Western Railway, El… (the part closure is on another part of the line, not between Barking and Mile End) Details ›\n\nMile End\nCentral ›\nRunning fine\n\nCentral: Minor delays between White City and Ealing Broadway/West Ruislip and between Leytonstone and Epping/Hainault via Newbury Park due to train cancellations. GOOD SERVICE on the rest of the line. (the minor delays are on another part of the line, not between Mile End and Liverpool Street) Details ›\n\nLiverpool Street",
+      "journeys": "15:58\nin 14 min\nc2c\n›\nDistrict\n›\nCentral\narr 16:39\n41 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:10\nin 26 min\nc2c\n›\nc2c\n›\nDistrict\n›\nCentral\narr 17:24\n74 min\n\nBarking: No Step Free Access - Step free access is not available due to a faulty lift. Call us on 0343 222 1234 if you need help planning y… Details ›\n\n16:57\nin 1h 13m\nc2c\n›\nHammersmith & City\n›\nCentral\narr 17:35\n38 min\n\nCentral Line: Severe delays westbound only while emergency services deal with a fire near the track at Leytonstone. London Buses, Liberty l… Details ›",
+      "live": "District\nBarking to Mile End\nRichmond · Westbound - Platform 3\nDue\nCentral\nMile End to Liverpool Street\nWest Ruislip · Westbound - Platform 1\n5 min\nWest Ruislip · Westbound - Platform 1\n5 min\nNortholt · Westbound - Platform 1\n6 min\nWhite City · Westbound - Platform 1\n8 min\nWest Ruislip · Westbound - Platform 1\n9 min\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "16 good\n2 with delays\n2 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/London%20Liverpool%20Street?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GLIVST?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/district/Route/Sequence/all",
+        "200 /Line/central/Route/Sequence/all",
+        "200 /StopPoint/940GZZLULVT/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals",
+        "200 /StopPoint/940GZZLUBKG/Arrivals"
+      ],
+      "screenshot": "elsewhere-ock-to-lst.png"
+    }
+  ]
+}
