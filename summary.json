@@ -1,0 +1,139 @@
+{
+  "checkedAt": "27 Nov 2026, 16:57",
+  "lines": [
+    {
+      "id": "district",
+      "name": "District",
+      "statuses": [
+        {
+          "severity": 6,
+          "description": "Severe Delays",
+          "reason": "District Line: Severe delays due to strike action. If you're travelling beyond Earl's Court, please take the first train and change there. Services are operating every 10 minutes. "
+        }
+      ]
+    },
+    {
+      "id": "suffragette",
+      "name": "Suffragette",
+      "statuses": [
+        {
+          "severity": 10,
+          "description": "Good Service",
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "id": "c2c",
+      "name": "c2c",
+      "statuses": [
+        {
+          "severity": 0,
+          "description": "Special Service",
+          "reason": "https://www.nationalrail.co.uk/service-disruptions/grays-20261127/"
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "auto (time of day)",
+      "hash": "",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NOPE",
+      "sub": "Not even slightly fucked. Enjoy it while it lasts.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\nBarking\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nOckendon",
+      "journeys": "17:08\nin 11 min\nSuffragette\n›\nc2c\narr 17:40\n32 min\n17:23\nin 26 min\nSuffragette\n›\nc2c\narr 17:54\n31 min\n17:38\nin 41 min\nSuffragette\n›\nc2c\narr 18:10\n32 min",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\n12 min\nBarking Riverside · Platform 2\n27 min\nBarking Riverside · Platform Unknown\n42 min\nBarking Riverside · Platform Unknown\n57 min\nBarking Riverside · Platform Unknown\n72 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "10 good\n3 with delays\n7 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "auto-time-of-day-.png"
+    },
+    {
+      "name": "to Woodgrange Park",
+      "hash": "#to-woodgrange",
+      "finished": true,
+      "question": "IS MY JOURNEY TO WOODGRANGE PARK FUCKED?",
+      "answer": "NOT TODAY",
+      "sub": "All clear. c2c and TfL are behaving themselves for once.",
+      "planB": "",
+      "dirNote": "You picked this direction",
+      "route": "Ockendon\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nBarking\nSuffragette ›\nRunning fine\nWoodgrange Park",
+      "journeys": "17:00\nin 3 min\nc2c\n›\nc2c\n›\nSuffragette\narr 17:27\n27 min\n17:27\nin 30 min\nc2c\n›\nSuffragette\narr 17:57\n30 min\n17:57\nin 1h 0m\nc2c\n›\nSuffragette\narr 18:27\n30 min",
+      "live": "Suffragette\nBarking to Woodgrange Park\nGospel Oak · Platform 8\n13 min\nGospel Oak · Platform 8\n28 min\nGospel Oak · Platform 8\n43 min\nGospel Oak · Platform 8\n58 min\nGospel Oak · Platform 8\n73 min\nc2c\nOckendon to Barking\n\nNational Rail live departures ↗",
+      "netsum": "10 good\n3 with delays\n7 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GWDGRNPK?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-woodgrange-park.png"
+    },
+    {
+      "name": "to Ockendon",
+      "hash": "#to-ockendon",
+      "finished": true,
+      "question": "IS MY JOURNEY TO OCKENDON FUCKED?",
+      "answer": "NOPE",
+      "sub": "Not fucked. Write it in your diary, this doesn't happen often.",
+      "planB": "",
+      "dirNote": "Auto: it's after 1pm, so heading home",
+      "route": "Woodgrange Park\nSuffragette ›\nRunning fine\nBarking\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nOckendon",
+      "journeys": "17:08\nin 11 min\nSuffragette\n›\nc2c\narr 17:40\n32 min\n17:23\nin 26 min\nSuffragette\n›\nc2c\narr 17:54\n31 min\n17:38\nin 41 min\nSuffragette\n›\nc2c\narr 18:10\n32 min",
+      "live": "Suffragette\nWoodgrange Park to Barking\nBarking Riverside · Platform 2\n12 min\nBarking Riverside · Platform 2\n27 min\nBarking Riverside · Platform Unknown\n42 min\nBarking Riverside · Platform Unknown\n57 min\nBarking Riverside · Platform Unknown\n72 min\nc2c\nBarking to Ockendon\n\nNational Rail live departures ↗",
+      "netsum": "10 good\n3 with delays\n7 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /StopPoint/Search/Woodgrange%20Park?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GWDGRNPK/to/910GOCKENDN?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /Line/suffragette/Arrivals"
+      ],
+      "screenshot": "to-ockendon.png"
+    },
+    {
+      "name": "Elsewhere: OCK to LST",
+      "hash": "#go/OCK/LST",
+      "finished": true,
+      "question": "IS MY JOURNEY TO LONDON LIVERPOOL STREET FUCKED?",
+      "answer": "YES",
+      "sub": "Proper fucked. Kiss your evening goodbye, because District and Central are broken between West Ham and Mile End.",
+      "planB": "",
+      "dirNote": "Ockendon to London Liverpool Street · Reverse it · Back to my commute",
+      "route": "Ockendon\nc2c ›\nRunning fine\n\nc2c: National Rail notice ↗ (c2c has a notice out, but TfL's journey planner still has trains here) Details ›\n\nWest Ham\nDistrict ›\nFucked\n\nDistrict: Severe delays due to strike action. If you're travelling beyond Earl's Court, please take the first train and change there. Services are operating every 10 minutes. Details ›\n\nMile End\nCentral ›\nFucked\n\nCentral: Severe delays due to the unavailability of control room staff. Tickets will be accepted on London Buses, Liberty Line, Elizabeth Line, Chiltern Railways, Great Western Railways and Greater Anglia ser… Details ›\n\nLiverpool Street",
+      "journeys": "17:00\nin 3 min\nc2c\n›\nDistrict\n›\nCentral\narr 17:38\n38 min\n\nDistrict Line: Severe delays due to strike action. If you're travelling beyond Earl's Court, please take the first train and change there.… Details ›\n\n17:27\nin 30 min\nc2c\n›\nDistrict\n›\nCentral\narr 18:09\n42 min\n\nDistrict Line: Severe delays due to strike action. If you're travelling beyond Earl's Court, please take the first train and change there.… Details ›\n\n17:57\nin 1h 0m\nc2c\n›\nDistrict\n›\nCentral\narr 18:41\n44 min\n\nDistrict Line: Severe delays due to strike action. If you're travelling beyond Earl's Court, please take the first train and change there.… Details ›",
+      "live": "District\nWest Ham to Mile End\nWimbledon · Westbound - Platform 1\n3 min\nEaling Broadway · Westbound - Platform 1\n4 min\nRichmond · Westbound - Platform 1\n5 min\nWimbledon · Westbound - Platform 1\n8 min\nWimbledon · Westbound - Platform 1\n10 min\nCentral\nMile End to Liverpool Street\nEaling Broadway · Westbound - Platform 1\n1 min\nEaling Broadway · Westbound - Platform 1\n14 min\nEaling Broadway · Westbound - Platform 1\n21 min\nc2c\nOckendon to West Ham\n\nNational Rail live departures ↗",
+      "netsum": "10 good\n3 with delays\n7 severe or suspended\nTap a count to see just those lines",
+      "whatWentWrong": "",
+      "errors": [],
+      "tfl": [
+        "200 /Line/Mode/national-rail,tube,overground,elizabeth-line,dlr/Status",
+        "200 /StopPoint/Search/Ockendon?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /StopPoint/Search/London%20Liverpool%20Street?modes=national-rail,overground,tube,elizabeth-line,dlr&maxResults=8",
+        "200 /Journey/JourneyResults/910GOCKENDN/to/910GLIVST?mode=national-rail,overground,tube,elizabeth-line,dlr,walking&timeIs=Departing",
+        "200 /StopPoint/940GZZLULVT/Arrivals",
+        "200 /StopPoint/940GZZLUWHM/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals",
+        "200 /StopPoint/940GZZLUMED/Arrivals"
+      ],
+      "screenshot": "elsewhere-ock-to-lst.png"
+    }
+  ]
+}
